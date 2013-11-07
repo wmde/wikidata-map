@@ -1,0 +1,9 @@
+[submodule "wda"]
+	path = wda
+	url = ssh://git@github.com/addshore/wda.git
+[submodule "wikiglobe"]
+	path = wikiglobe
+	url = ssh://git@github.com:vrandezo/wikiglobe.git
+[submodule "wikidata-analysis"]
+	path = wikidata-analysis
+	url = ssh://git@github.com/vrandezo/wikidata-analysis.git
