@@ -1,3 +1,5 @@
+# This is the main entry point
+
 #initial analysis....
 cd wda
 python wda-analyze-edits-and-write-kb.py
