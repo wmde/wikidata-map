@@ -4,6 +4,6 @@
 [submodule "wikiglobe"]
 	path = wikiglobe
 	url = https://github.com/vrandezo/wikiglobe.git
-[submodule "wikidata-analysis"]
-	path = wikidata-analysis
-	url = https://github.com/vrandezo/wikidata-analysis.git
+[submodule "wikidata-analytics"]
+	path = wikidata-analytics
+	url = https://github.com/vrandezo/wikidata-analytics.git
