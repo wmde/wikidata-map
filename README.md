@@ -12,3 +12,5 @@ To run in other environments just run run.sh
 * NOTE: the scripts require a lot of memory
 * NOTE: the scripts expect public_html to be in your home dir
 * NOTE: analysis.sh expects to be run when in its path
+
+This is a test line added to test irc notifications
