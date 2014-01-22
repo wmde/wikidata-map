@@ -1,6 +1,6 @@
 [submodule "wda"]
 	path = wda
-	url = https://github.com/addshore/wda.git
+	url = https://github.com/mkroetzsch/wda.git
 [submodule "wikiglobe"]
 	path = wikiglobe
 	url = https://github.com/vrandezo/wikiglobe.git
