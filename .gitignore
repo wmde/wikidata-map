@@ -1,0 +1,11 @@
+#Files
+*.iml
+
+#Directories
+lib
+out
+.idea
+wdanalysis/target/
+
+#Directory dumps are stored in
+dumpfiles

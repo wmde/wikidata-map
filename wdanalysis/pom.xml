@@ -1,0 +1,24 @@
+<project>
+    <version>0.0.1</version>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>wikidata-analysis</artifactId>
+    <groupId>org.wikidata.wdanalysis</groupId>
+    <name>Data Analysis for wikidata-analysis</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.wikidata.wdtk</groupId>
+            <artifactId>wdtk-dumpfiles</artifactId>
+            <version>0.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.8.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+    </dependencies>
+</project>
