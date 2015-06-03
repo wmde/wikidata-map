@@ -2,7 +2,7 @@
 # Original source https://github.com/vrandezo/wikidata-analytics/blob/6896d639bd124eec7571f1179f27ae2b6bfaa435/geo2png.py
 # Re written for different data input by Addshore
 # Script takes roughly 5-10 minutes to run
-import png, gzip, json, sys, time
+import png, gzip, json, sys, time, os
 
 settings = {
 	'icon' : {
@@ -53,8 +53,9 @@ startTime = time.time()
 
 # Load the js file into a var
 print "Loading data file"
+dataDirectory = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "data")
 fileContent = ""
-with open ("wdlabel.js", "r") as dataFile:
+with open (os.path.join(dataDirectory, "wdlabel.js"), "r") as dataFile:
 	fileContent=dataFile.read()
 
 # Instead of doing this the main generation should simply generate a json file!

@@ -1,0 +1,8 @@
+#Files
+*.iml
+
+#Directories
+lib
+out
+.idea
+wdanalysis/target/

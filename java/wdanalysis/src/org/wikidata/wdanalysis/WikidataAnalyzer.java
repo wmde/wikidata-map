@@ -16,6 +16,7 @@ public class WikidataAnalyzer {
 
     /**
      * Main method. Processes the whole dump using this processor and writes the results to disk.
+     * This should be executed when in the root of the git repo to ensure the correct local dump dir is used.
      *
      * @param args
      */
@@ -24,10 +25,10 @@ public class WikidataAnalyzer {
         System.out.println("*** Wikidata Toolkit: WikidataAnalyzer ***");
         System.out.println("******************************************");
         if (Runtime.getRuntime().maxMemory() / 1024 / 1024 <= 1900) {
-            System.out.println("Please increase your Java VM max memory to greater than 2GB");
-            System.exit(-1);
+            System.out.println("WARNING: You may need to increase your memory limit!");
         }
         long startTime = System.currentTimeMillis();
+        String dataDirectory = System.getProperty("user.dir") + File.separator + "data" + File.separator;
 
         DumpProcessingController controller = new DumpProcessingController("wikidatawiki");
         controller.setOfflineMode(false);
@@ -49,13 +50,13 @@ public class WikidataAnalyzer {
 
         // Create all output files
         System.out.println("Writing map wdlabel.js");
-        BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("wdlabel.js"))));
+        BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File( dataDirectory + "wdlabel.js"))));
         mapLabelWriter.write("var geodata = ");
         mapGeoData.writeJSONString(mapLabelWriter);
         mapLabelWriter.write(";");
         mapLabelWriter.close();
         System.out.println("Writing map graph.js");
-        BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("graph.js"))));
+        BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File( dataDirectory + "graph.js"))));
         mapGraphWriter.write("var graph = ");
         mapGraphData.writeJSONString(mapGraphWriter);
         mapGraphWriter.write(";");
