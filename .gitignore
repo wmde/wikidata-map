@@ -1,11 +1,13 @@
 #Files
 *.iml
+*.png
 
 #Directories
 lib
 out
 .idea
 wdanalysis/target/
+data/*
 
 #Directory dumps are stored in
 dumpfiles
