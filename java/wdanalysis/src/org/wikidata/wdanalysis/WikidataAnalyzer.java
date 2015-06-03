@@ -49,17 +49,13 @@ public class WikidataAnalyzer {
         System.out.println("Memory Usage (MB): " + Runtime.getRuntime().totalMemory() / 1024 / 1024);
 
         // Create all output files
-        System.out.println("Writing map wdlabel.js");
-        BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File( dataDirectory + "wdlabel.js"))));
-        mapLabelWriter.write("var geodata = ");
+        System.out.println("Writing map wdlabel.json");
+        BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File( dataDirectory + "wdlabel.json"))));
         mapGeoData.writeJSONString(mapLabelWriter);
-        mapLabelWriter.write(";");
         mapLabelWriter.close();
-        System.out.println("Writing map graph.js");
-        BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File( dataDirectory + "graph.js"))));
-        mapGraphWriter.write("var graph = ");
+        System.out.println("Writing map graph.json");
+        BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File( dataDirectory + "graph.json"))));
         mapGraphData.writeJSONString(mapGraphWriter);
-        mapGraphWriter.write(";");
         mapGraphWriter.close();
 
         // Finish up

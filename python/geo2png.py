@@ -51,19 +51,12 @@ settings = {
 
 startTime = time.time()
 
-# Load the js file into a var
-print "Loading data file"
+# Load the json file into a var
+print "Loading json data file"
 dataDirectory = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "data")
 fileContent = ""
-with open (os.path.join(dataDirectory, "wdlabel.js"), "r") as dataFile:
+with open (os.path.join(dataDirectory, "wdlabel.json"), "r") as dataFile:
 	fileContent=dataFile.read()
-
-# Instead of doing this the main generation should simply generate a json file!
-print "Cleaning file"
-if fileContent.startswith('var geodata = '):
-	fileContent = fileContent[len('var geodata = '):]
-if fileContent.endswith(';'):
-	fileContent = fileContent[:-len(';')]
 
 print "Loading to data to Dictionary"
 data = json.loads(fileContent)
