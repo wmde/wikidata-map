@@ -1,4 +1,4 @@
-package org.wikidata.wdanalysis.Fetcher;
+package main.java.org.wikidata.analyzer.Fetcher;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

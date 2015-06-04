@@ -1,8 +1,7 @@
-package org.wikidata.wdanalysis.Fetcher;
+package main.java.org.wikidata.analyzer.Fetcher;
 
-import org.wikidata.wdanalysis.DumpFile.JsonLabsDumpFile;
-import org.wikidata.wdanalysis.DumpFile.JsonLocalDumpFileImpl;
-import org.wikidata.wdanalysis.Fetcher.DumpDateFetcher;
+import main.java.org.wikidata.analyzer.DumpFile.JsonLabsDumpFile;
+import main.java.org.wikidata.analyzer.DumpFile.JsonLocalDumpFileImpl;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 import org.wikidata.wdtk.dumpfiles.wmf.JsonOnlineDumpFile;
 import org.wikidata.wdtk.util.DirectoryManager;
@@ -47,7 +46,7 @@ public class DumpFetcher {
         }
 
         // 3) Fallback to downloading the dump ourselves
-        DirectoryManager localDirectoryManager = new DirectoryManagerImpl(System.getProperty("user.dir") + File.pathSeparator + "dumpfiles");
+        DirectoryManager localDirectoryManager = new DirectoryManagerImpl(System.getProperty("user.dir") + File.separator + "dumpfiles");
         WebResourceFetcher fetcher = new WebResourceFetcherImpl();
         JsonOnlineDumpFile onlineDumpFile = new JsonOnlineDumpFile(
                 latestDumpDate,

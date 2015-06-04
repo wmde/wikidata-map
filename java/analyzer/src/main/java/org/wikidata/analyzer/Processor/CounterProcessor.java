@@ -1,4 +1,4 @@
-package org.wikidata.wdanalysis.Processor;
+package main.java.org.wikidata.analyzer.Processor;
 
 import org.wikidata.wdtk.datamodel.interfaces.*;
 

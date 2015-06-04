@@ -1,9 +1,9 @@
-package org.wikidata.wdanalysis;
+package main.java.org.wikidata.analyzer;
 
+import main.java.org.wikidata.analyzer.Processor.CounterProcessor;
+import main.java.org.wikidata.analyzer.Processor.MapProcessor;
+import main.java.org.wikidata.analyzer.Fetcher.DumpFetcher;
 import org.json.simple.JSONObject;
-import org.wikidata.wdanalysis.Fetcher.DumpFetcher;
-import org.wikidata.wdanalysis.Processor.CounterProcessor;
-import org.wikidata.wdanalysis.Processor.MapProcessor;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 

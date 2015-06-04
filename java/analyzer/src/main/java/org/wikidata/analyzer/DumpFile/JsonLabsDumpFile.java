@@ -1,4 +1,4 @@
-package org.wikidata.wdanalysis.DumpFile;
+package main.java.org.wikidata.analyzer.DumpFile;
 
 import org.wikidata.wdtk.dumpfiles.DumpContentType;
 import org.wikidata.wdtk.dumpfiles.wmf.WmfDumpFile;
