@@ -1,9 +1,11 @@
 <project>
+
     <version>0.0.1</version>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>wikidata-analysis</artifactId>
-    <groupId>org.wikidata.wdanalysis</groupId>
-    <name>Data Analysis for wikidata-analysis</name>
+    <artifactId>analyzer</artifactId>
+    <groupId>org.wikidata.analyzer</groupId>
+    <name>Data Analyzer for wikidata-analysis</name>
+
     <dependencies>
         <dependency>
             <groupId>org.wikidata.wdtk</groupId>
@@ -21,4 +23,46 @@
             <version>1.1.1</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>wikidata-analyzer</finalName>
+                            <!-- Minimization just does not work; removes many relevant classes -->
+                            <minimizeJar>false</minimizeJar>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>main.java.org.wikidata.analyzer.WikidataAnalyzer</mainClass>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
