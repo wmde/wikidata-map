@@ -12,7 +12,7 @@ import java.io.InputStream;
 
 /**
  * Implements the unimplemented class JsonLocalDumpFile from the ToolKit
- * This class is removed in a future version and this this may be rethought
+ * This class is removed in a future version and this may be rethought
  *
  * @author Addshore
  */
