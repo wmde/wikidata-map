@@ -49,13 +49,28 @@ settings = {
 	}
 }
 
+# Get the data file location from arguments
+try:
+	dataDir = sys.argv[1]
+except IndexError:
+	print "Error: You must pass a data directory as a parameter."
+	sys.exit(1)
+
+if not os.path.isdir(dataDir):
+	print "Error: Data directory specified does not exist."
+	sys.exit(1)
+
 startTime = time.time()
+
+# Make output directory
+outputDirectory = os.path.join(dataDir, 'geo2png')
+if not os.path.exists(outputDirectory):
+    os.makedirs(outputDirectory)
 
 # Load the json file into a var
 print "Loading json data file"
-dataDirectory = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "data")
 fileContent = ""
-with open (os.path.join(dataDirectory, "wdlabel.json"), "r") as dataFile:
+with open (os.path.join(dataDir, "wdlabel.json"), "r") as dataFile:
 	fileContent=dataFile.read()
 
 print "Loading to data to Dictionary"
@@ -96,7 +111,7 @@ for size in settings.keys() :
 	print count, "entities"
 	print badCoordCount, "bad coordinates"
 
-	f = open('map_' + size + '.png', 'wb')
+	f = open(os.path.join(outputDirectory, 'map_' + size + '.png'), 'wb')
 	w = png.Writer(settings[size]['x'], settings[size]['y'])
 	w.write(f, p)
 	f.close()
