@@ -1,9 +1,8 @@
 package main.java.org.wikidata.analyzer;
 
+import main.java.org.wikidata.analyzer.Processor.BadDateProcessor;
 import main.java.org.wikidata.analyzer.Processor.CounterProcessor;
-import main.java.org.wikidata.analyzer.Processor.MapProcessor;
 import main.java.org.wikidata.analyzer.Fetcher.DumpFetcher;
-import org.json.simple.JSONObject;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 
@@ -45,16 +44,17 @@ public class WikidataAnalyzer {
         }
         long startTime = System.currentTimeMillis();
 
+        File list1 = new File( dataDir.getAbsolutePath() + File.separator + "date_list1.txt");
+        BufferedWriter list1Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list1)));
+        File list2 = new File( dataDir.getAbsolutePath() + File.separator + "date_list2.txt");
+        BufferedWriter list2Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list2)));
+
         DumpProcessingController controller = new DumpProcessingController("wikidatawiki");
         controller.setOfflineMode(false);
 
-        // Create Json output objects
-        JSONObject mapGeoData = new JSONObject();
-        JSONObject mapGraphData = new JSONObject();
-
         // Fetch and process dump
         controller.registerEntityDocumentProcessor(new CounterProcessor(), null, true);
-        controller.registerEntityDocumentProcessor(new MapProcessor(mapGeoData, mapGraphData), null, true);
+        controller.registerEntityDocumentProcessor(new BadDateProcessor(list1Writer, list2Writer), null, true);
         DumpFetcher fetcher = new DumpFetcher(dataDir);
         System.out.println("Fetching dump");
         MwDumpFile dump = fetcher.getMostRecentDump();
@@ -63,17 +63,9 @@ public class WikidataAnalyzer {
         System.out.println("Processed!");
         System.out.println("Memory Usage (MB): " + Runtime.getRuntime().totalMemory() / 1024 / 1024);
 
-        // Create all output files
-        System.out.println("Writing map wdlabel.json");
-        File mapLabelFile = new File( dataDir.getAbsolutePath() + File.separator + "wdlabel.json");
-        BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapLabelFile)));
-        mapGeoData.writeJSONString(mapLabelWriter);
-        mapLabelWriter.close();
-        System.out.println("Writing map graph.json");
-        File mapGraphFile = new File( dataDir.getAbsolutePath() + File.separator + "graph.json");
-        BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapGraphFile)));
-        mapGraphData.writeJSONString(mapGraphWriter);
-        mapGraphWriter.close();
+        // Close the writers
+        list1Writer.close();
+        list2Writer.close();
 
         // Finish up
         System.out.println("All Done!");
