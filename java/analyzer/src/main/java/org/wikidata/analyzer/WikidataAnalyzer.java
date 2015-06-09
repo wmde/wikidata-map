@@ -24,11 +24,26 @@ public class WikidataAnalyzer {
         System.out.println("******************************************");
         System.out.println("*** Wikidata Toolkit: WikidataAnalyzer ***");
         System.out.println("******************************************");
-        if (Runtime.getRuntime().maxMemory() / 1024 / 1024 <= 1900) {
+
+        // Get the data directory
+        File dataDir = null;
+        try{
+            dataDir = new File(args[0]);
+            if (!dataDir.exists()) {
+                System.out.println("Error: Data directory specified does not exist.");
+                System.exit(1);
+            }
+        }
+        catch( ArrayIndexOutOfBoundsException exception ) {
+            System.out.println("Error: You must pass a data directory as a parameter.");
+            System.exit(1);
+        }
+        System.out.println("Using data directory: " + dataDir.getAbsolutePath());
+
+        if (Runtime.getRuntime().maxMemory() / 1024 / 1024 <= 1500) {
             System.out.println("WARNING: You may need to increase your memory limit!");
         }
         long startTime = System.currentTimeMillis();
-        String dataDirectory = System.getProperty("user.dir") + File.separator + "data" + File.separator;
 
         DumpProcessingController controller = new DumpProcessingController("wikidatawiki");
         controller.setOfflineMode(false);
@@ -40,7 +55,7 @@ public class WikidataAnalyzer {
         // Fetch and process dump
         controller.registerEntityDocumentProcessor(new CounterProcessor(), null, true);
         controller.registerEntityDocumentProcessor(new MapProcessor(mapGeoData, mapGraphData), null, true);
-        DumpFetcher fetcher = new DumpFetcher();
+        DumpFetcher fetcher = new DumpFetcher(dataDir);
         System.out.println("Fetching dump");
         MwDumpFile dump = fetcher.getMostRecentDump();
         System.out.println("Processing dump");
@@ -50,11 +65,13 @@ public class WikidataAnalyzer {
 
         // Create all output files
         System.out.println("Writing map wdlabel.json");
-        BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File( dataDirectory + "wdlabel.json"))));
+        File mapLabelFile = new File( dataDir.getAbsolutePath() + File.separator + "wdlabel.json");
+        BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapLabelFile)));
         mapGeoData.writeJSONString(mapLabelWriter);
         mapLabelWriter.close();
         System.out.println("Writing map graph.json");
-        BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File( dataDirectory + "graph.json"))));
+        File mapGraphFile = new File( dataDir.getAbsolutePath() + File.separator + "graph.json");
+        BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapGraphFile)));
         mapGraphData.writeJSONString(mapGraphWriter);
         mapGraphWriter.close();
 

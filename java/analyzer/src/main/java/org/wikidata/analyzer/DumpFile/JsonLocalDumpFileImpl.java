@@ -18,8 +18,11 @@ import java.io.InputStream;
  */
 public class JsonLocalDumpFileImpl extends WmfDumpFile {
 
-    public JsonLocalDumpFileImpl(String dateStamp) {
+    protected File dataDirectory;
+
+    public JsonLocalDumpFileImpl(String dateStamp, File dataDirectory) {
         super(dateStamp, "wikidatawiki");
+        this.dataDirectory = dataDirectory;
     }
 
     @Override
@@ -55,8 +58,7 @@ public class JsonLocalDumpFileImpl extends WmfDumpFile {
 
     private DirectoryManager getDirectoryManager() throws IOException {
         return new DirectoryManagerImpl(
-                System.getProperty("user.dir") +
-                        File.separator + "data" +
+                this.dataDirectory +
                         File.separator + "dumpfiles" +
                         File.separator + "json-" + this.getDateStamp()
         );

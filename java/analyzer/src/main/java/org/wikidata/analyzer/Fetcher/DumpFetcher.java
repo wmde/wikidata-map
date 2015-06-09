@@ -17,6 +17,12 @@ import java.io.IOException;
  */
 public class DumpFetcher {
 
+    protected File dataDirectory;
+
+    public DumpFetcher(File dataDirectory) {
+        this.dataDirectory = dataDirectory;
+    }
+
     /**
      * Look for the most recent dump date online and try to retrieve as dump object with fallback:
      * 1 - Look for dumps in location expected on labs
@@ -39,14 +45,14 @@ public class DumpFetcher {
         }
 
         // 2) Try to use our local storage directory
-        JsonLocalDumpFileImpl localDumpFile = new JsonLocalDumpFileImpl(latestDumpDate);
+        JsonLocalDumpFileImpl localDumpFile = new JsonLocalDumpFileImpl(latestDumpDate, this.dataDirectory);
         if (localDumpFile.isAvailable()) {
             System.out.println("Using dump file from local storage");
             return localDumpFile;
         }
 
         // 3) Fallback to downloading the dump ourselves
-        DirectoryManager localDirectoryManager = new DirectoryManagerImpl(System.getProperty("user.dir") + File.separator + "dumpfiles");
+        DirectoryManager localDirectoryManager = new DirectoryManagerImpl(this.dataDirectory.getAbsolutePath() + File.separator + "dumpfiles");
         WebResourceFetcher fetcher = new WebResourceFetcherImpl();
         JsonOnlineDumpFile onlineDumpFile = new JsonOnlineDumpFile(
                 latestDumpDate,
