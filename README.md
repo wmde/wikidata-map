@@ -1,6 +1,7 @@
 wikidata-analysis
 =================
 
-Written in Java using the Wikidata-Toolkit.
-
-Please run your Java VM with -Xmx2g or greater.
+Code is written in a combination of:
+ - Java
+ - Python
+ - HTML & JavaScript
