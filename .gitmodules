@@ -1,9 +1,0 @@
-[submodule "wda"]
-	path = wda
-	url = https://github.com/mkroetzsch/wda.git
-[submodule "wikiglobe"]
-	path = wikiglobe
-	url = https://github.com/vrandezo/wikiglobe.git
-[submodule "wikidata-analytics"]
-	path = wikidata-analytics
-	url = https://github.com/vrandezo/wikidata-analytics.git
