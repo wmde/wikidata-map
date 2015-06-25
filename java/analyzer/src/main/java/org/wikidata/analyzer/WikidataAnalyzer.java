@@ -15,9 +15,9 @@ import java.io.*;
 public class WikidataAnalyzer {
 
     /**
-     * The arguments passed via the command line
+     * Folder that all output should be stored in
      */
-    private final String[] args;
+    private File dataDir = null;
 
     /**
      * Main method. Instantiates and runs the analyzer
@@ -32,20 +32,12 @@ public class WikidataAnalyzer {
      * @param args Command line arguments
      */
     public WikidataAnalyzer( String[] args ) {
-        this.args = args;
-    }
-
-    /**
-     * Processes the whole dump using this processor and writes the results to disk.
-     * This should be executed when in the root of the git repo to ensure the correct local dump dir is used.
-     */
-    public void run() throws IOException {
+        // Output a pretty banner
         System.out.println("******************************************");
         System.out.println("*** Wikidata Toolkit: WikidataAnalyzer ***");
         System.out.println("******************************************");
 
         // Get the data directory
-        File dataDir = null;
         try{
             dataDir = new File(args[args.length-1]);
             if (!dataDir.exists()) {
@@ -59,9 +51,17 @@ public class WikidataAnalyzer {
         }
         System.out.println("Using data directory: " + dataDir.getAbsolutePath());
 
+        // Check memory limit
         if (Runtime.getRuntime().maxMemory() / 1024 / 1024 <= 1500) {
             System.out.println("WARNING: You may need to increase your memory limit!");
         }
+    }
+
+    /**
+     * Processes the whole dump using this processor and writes the results to disk.
+     * This should be executed when in the root of the git repo to ensure the correct local dump dir is used.
+     */
+    public void run() throws IOException {
         long startTime = System.currentTimeMillis();
 
         DumpProcessingController controller = new DumpProcessingController("wikidatawiki");
