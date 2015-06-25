@@ -68,6 +68,7 @@ public class WikidataAnalyzer {
                 System.out.println("Error: " + value + "Processor not found");
                 System.exit(1);
             }
+            System.out.println( value + "Processor enabled" );
         }
         processors = Arrays.asList( args );
 
