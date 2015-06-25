@@ -1,8 +1,5 @@
 package main.java.org.wikidata.analyzer.Processor;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.wikidata.wdtk.datamodel.implementation.PropertyIdValueImpl;
 import org.wikidata.wdtk.datamodel.interfaces.*;
 
 import java.io.*;
