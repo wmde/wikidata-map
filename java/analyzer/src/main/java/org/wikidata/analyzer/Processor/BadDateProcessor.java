@@ -18,9 +18,11 @@ public class BadDateProcessor implements EntityDocumentProcessor {
     private String gregorianCalendar = "http://www.wikidata.org/entity/Q1985727";
     private String julianCalendar = "http://www.wikidata.org/entity/Q1985786";
 
-    public BadDateProcessor( BufferedWriter writer1, BufferedWriter writer2 ) {
+    public BadDateProcessor( BufferedWriter writer1, BufferedWriter writer2 ) throws IOException {
         this.writer1 = writer1;
+        this.writer1.write("Dates marked as Julian that are more precise than year\n----\n");
         this.writer2 = writer2;
+        this.writer2.write("Dates marked as gregorian, before 1584\n----\n");
     }
 
     @Override
