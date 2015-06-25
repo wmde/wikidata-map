@@ -15,12 +15,31 @@ import java.io.*;
 public class WikidataAnalyzer {
 
     /**
-     * Main method. Processes the whole dump using this processor and writes the results to disk.
-     * This should be executed when in the root of the git repo to ensure the correct local dump dir is used.
-     *
-     * @param args
+     * The arguments passed via the command line
+     */
+    private final String[] args;
+
+    /**
+     * Main method. Instantiates and runs the analyzer
+     * @param args Command line arguments
      */
     public static void main(String[] args) throws IOException {
+        WikidataAnalyzer analyzer = new WikidataAnalyzer( args );
+        analyzer.run();
+    }
+
+    /**
+     * @param args Command line arguments
+     */
+    public WikidataAnalyzer( String[] args ) {
+        this.args = args;
+    }
+
+    /**
+     * Processes the whole dump using this processor and writes the results to disk.
+     * This should be executed when in the root of the git repo to ensure the correct local dump dir is used.
+     */
+    public void run() throws IOException {
         System.out.println("******************************************");
         System.out.println("*** Wikidata Toolkit: WikidataAnalyzer ***");
         System.out.println("******************************************");
@@ -28,7 +47,7 @@ public class WikidataAnalyzer {
         // Get the data directory
         File dataDir = null;
         try{
-            dataDir = new File(args[0]);
+            dataDir = new File(args[args.length-1]);
             if (!dataDir.exists()) {
                 System.out.println("Error: Data directory specified does not exist.");
                 System.exit(1);
@@ -80,4 +99,5 @@ public class WikidataAnalyzer {
         long elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
         System.out.println("Execution time: " + elapsedSeconds / 60 + ":" + elapsedSeconds % 60);
     }
+
 }
