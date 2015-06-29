@@ -46,6 +46,20 @@ settings = {
 		'diffr' : 150,
 		'diffg' : 70,
 		'diffb' : 20
+	},
+	'enormous' : {
+		'x' : 16000,
+		'y' : 8000,
+		'diffr' : 150,
+		'diffg' : 70,
+		'diffb' : 20
+	},
+	'gigantic' : {
+		'x' : 32000,
+		'y' : 16000,
+		'diffr' : 150,
+		'diffg' : 70,
+		'diffb' : 20
 	}
 }
 
