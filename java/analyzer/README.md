@@ -4,7 +4,7 @@
 
 ** Run me using Java **
 
-    java -Xmx2g -jar ./target/wikidata-analyzer.jar
+    java -Xmx2g -jar ./target/wikidata-analyzer.jar BadDate Map ~/data
 
 ** Use my output **
 
