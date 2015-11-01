@@ -11,6 +11,7 @@ import org.wikidata.wdtk.util.WebResourceFetcherImpl;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 /**
  * @author Addshore
@@ -52,7 +53,10 @@ public class DumpFetcher {
         }
 
         // 3) Fallback to downloading the dump ourselves
-        DirectoryManager localDirectoryManager = new DirectoryManagerImpl(this.dataDirectory.getAbsolutePath() + File.separator + "dumpfiles");
+        DirectoryManager localDirectoryManager = new DirectoryManagerImpl(
+                Paths.get(this.dataDirectory.getAbsolutePath() + File.separator + "dumpfiles"),
+                true
+        );
         WebResourceFetcher fetcher = new WebResourceFetcherImpl();
         JsonOnlineDumpFile onlineDumpFile = new JsonOnlineDumpFile(
                 latestDumpDate,

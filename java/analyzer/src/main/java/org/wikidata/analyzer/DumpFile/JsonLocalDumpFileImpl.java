@@ -9,6 +9,7 @@ import org.wikidata.wdtk.util.DirectoryManagerImpl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 /**
  * Implements the unimplemented class JsonLocalDumpFile from the ToolKit
@@ -58,9 +59,12 @@ public class JsonLocalDumpFileImpl extends WmfDumpFile {
 
     private DirectoryManager getDirectoryManager() throws IOException {
         return new DirectoryManagerImpl(
-                this.dataDirectory +
+                Paths.get(
+                    this.dataDirectory +
                         File.separator + "dumpfiles" +
                         File.separator + "json-" + this.getDateStamp()
+                ),
+                true
         );
     }
 }

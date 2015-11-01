@@ -8,6 +8,7 @@ import org.wikidata.wdtk.util.DirectoryManagerImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 /**
  * @author Addshore
@@ -53,6 +54,6 @@ public class JsonLabsDumpFile extends WmfDumpFile {
     }
 
     private DirectoryManager getDirectoryManager() throws IOException {
-        return new DirectoryManagerImpl("/data/scratch/wikidata/");
+        return new DirectoryManagerImpl( Paths.get("/data/scratch/wikidata/"), true );
     }
 }
