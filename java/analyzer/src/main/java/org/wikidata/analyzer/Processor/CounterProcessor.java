@@ -48,6 +48,7 @@ public class CounterProcessor {
             this.increment(type);
             this.processTermedDocument(document, type);
             this.processStatementDocument(document, type);
+            this.increment(type+".datatype."+document.getDatatype());
         }
     }
 
