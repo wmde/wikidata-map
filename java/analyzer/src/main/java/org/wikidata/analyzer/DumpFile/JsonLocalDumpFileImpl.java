@@ -60,9 +60,9 @@ public class JsonLocalDumpFileImpl extends WmfDumpFile {
     private DirectoryManager getDirectoryManager() throws IOException {
         return new DirectoryManagerImpl(
                 Paths.get(
-                    this.dataDirectory +
-                        File.separator + "dumpfiles" +
-                        File.separator + "json-" + this.getDateStamp()
+                        this.dataDirectory +
+                                File.separator + "dumpfiles" +
+                                File.separator + "json-" + this.getDateStamp()
                 ),
                 true
         );

@@ -29,51 +29,51 @@ public class WikidataAnalyzer {
 
     /**
      * Main method. Instantiates and runs the analyzer
+     *
      * @param args Command line arguments
      */
     public static void main(String[] args) throws IOException {
-        WikidataAnalyzer analyzer = new WikidataAnalyzer( args );
+        WikidataAnalyzer analyzer = new WikidataAnalyzer(args);
         analyzer.run();
     }
 
     /**
      * @param args Command line arguments
      */
-    public WikidataAnalyzer( String[] args ) {
+    public WikidataAnalyzer(String[] args) {
         // Output a pretty banner
         System.out.println("******************************************");
         System.out.println("*** Wikidata Toolkit: WikidataAnalyzer ***");
         System.out.println("******************************************");
 
         // Get the data directory
-        try{
-            dataDir = new File(args[args.length-1]);
+        try {
+            dataDir = new File(args[args.length - 1]);
             if (!dataDir.exists()) {
                 System.out.println("Error: Data directory specified does not exist.");
                 System.exit(1);
             }
-        }
-        catch( ArrayIndexOutOfBoundsException exception ) {
+        } catch (ArrayIndexOutOfBoundsException exception) {
             System.out.println("Error: You must pass a data directory as a parameter.");
             System.exit(1);
         }
         System.out.println("Using data directory: " + dataDir.getAbsolutePath());
-        args = Arrays.copyOf( args, args.length - 1 );
+        args = Arrays.copyOf(args, args.length - 1);
 
         // Get the list of processors
-        for( String value : args ) {
+        for (String value : args) {
             try {
-                Class.forName( "main.java.org.wikidata.analyzer.Processor." + value + "Processor" );
-            } catch( ClassNotFoundException e ) {
+                Class.forName("main.java.org.wikidata.analyzer.Processor." + value + "Processor");
+            } catch (ClassNotFoundException e) {
                 System.out.println("Error: " + value + "Processor not found");
                 System.exit(1);
             }
-            System.out.println( value + "Processor enabled" );
+            System.out.println(value + "Processor enabled");
         }
-        processors = Arrays.asList( args );
+        processors = Arrays.asList(args);
 
         // Check memory limit
-        if ( Runtime.getRuntime().maxMemory() / 1024 / 1024 <= 1500 ) {
+        if (Runtime.getRuntime().maxMemory() / 1024 / 1024 <= 1500) {
             System.out.println("WARNING: You may need to increase your memory limit!");
         }
     }
@@ -90,16 +90,16 @@ public class WikidataAnalyzer {
         // Map
         JSONObject mapGeoData = new JSONObject();
         JSONObject mapGraphData = new JSONObject();
-        if( processors.contains( "Map" ) ) {
+        if (processors.contains("Map")) {
             controller.registerEntityDocumentProcessor(new MapProcessor(mapGeoData, mapGraphData), null, true);
         }
 
         // BadDate
-        File list1 = new File( dataDir.getAbsolutePath() + File.separator + "date_list1.txt");
+        File list1 = new File(dataDir.getAbsolutePath() + File.separator + "date_list1.txt");
         BufferedWriter list1Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list1)));
-        File list2 = new File( dataDir.getAbsolutePath() + File.separator + "date_list2.txt");
+        File list2 = new File(dataDir.getAbsolutePath() + File.separator + "date_list2.txt");
         BufferedWriter list2Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list2)));
-        if( processors.contains( "BadDate" ) ) {
+        if (processors.contains("BadDate")) {
             controller.registerEntityDocumentProcessor(new BadDateProcessor(list1Writer, list2Writer), null, true);
         }
 
@@ -114,14 +114,14 @@ public class WikidataAnalyzer {
         System.out.println("Memory Usage (MB): " + Runtime.getRuntime().totalMemory() / 1024 / 1024);
 
         // Map
-        if( processors.contains( "Map" ) ) {
+        if (processors.contains("Map")) {
             System.out.println("Writing map wdlabel.json");
-            File mapLabelFile = new File( dataDir.getAbsolutePath() + File.separator + "wdlabel.json");
+            File mapLabelFile = new File(dataDir.getAbsolutePath() + File.separator + "wdlabel.json");
             BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapLabelFile)));
             mapGeoData.writeJSONString(mapLabelWriter);
             mapLabelWriter.close();
             System.out.println("Writing map graph.json");
-            File mapGraphFile = new File( dataDir.getAbsolutePath() + File.separator + "graph.json");
+            File mapGraphFile = new File(dataDir.getAbsolutePath() + File.separator + "graph.json");
             BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapGraphFile)));
             mapGraphData.writeJSONString(mapGraphWriter);
             mapGraphWriter.close();

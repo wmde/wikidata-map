@@ -15,7 +15,7 @@ public class BadDateProcessor implements EntityDocumentProcessor {
     private Writer writer1;
     private Writer writer2;
 
-    public BadDateProcessor( Writer writer1, Writer writer2 ) throws IOException {
+    public BadDateProcessor(Writer writer1, Writer writer2) throws IOException {
         this.writer1 = writer1;
         this.writer1.write("Dates marked as Julian that are more precise than year\n----\n");
         this.writer2 = writer2;
@@ -33,7 +33,7 @@ public class BadDateProcessor implements EntityDocumentProcessor {
                     TimeValue timeValue = (TimeValue) value;
 
                     //List1 - marked as Julian and are more precise than year
-                    if(timeValue.getPreferredCalendarModel().equals( TimeValue.CM_JULIAN_PRO )
+                    if (timeValue.getPreferredCalendarModel().equals(TimeValue.CM_JULIAN_PRO)
                             && timeValue.getPrecision() > 9) {
                         try {
                             this.writer1.write(statement.getStatementId() + "\n");
@@ -43,7 +43,7 @@ public class BadDateProcessor implements EntityDocumentProcessor {
                     }
 
                     //List2 - marked as gregorian, before 1584
-                    if(timeValue.getPreferredCalendarModel().equals( TimeValue.CM_GREGORIAN_PRO )
+                    if (timeValue.getPreferredCalendarModel().equals(TimeValue.CM_GREGORIAN_PRO)
                             && timeValue.getYear() < 1584) {
                         try {
                             this.writer2.write(statement.getStatementId() + "\n");

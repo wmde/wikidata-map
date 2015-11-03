@@ -54,6 +54,6 @@ public class JsonLabsDumpFile extends WmfDumpFile {
     }
 
     private DirectoryManager getDirectoryManager() throws IOException {
-        return new DirectoryManagerImpl( Paths.get("/data/scratch/wikidata/"), true );
+        return new DirectoryManagerImpl(Paths.get("/data/scratch/wikidata/"), true);
     }
 }

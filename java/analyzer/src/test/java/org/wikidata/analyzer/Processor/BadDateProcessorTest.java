@@ -15,6 +15,9 @@ import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
 
 import java.io.*;
 
+/**
+ * @author Addshore
+ */
 public class BadDateProcessorTest extends TestCase {
 
     public void testProcessItemDocument_constructWrites() throws Exception {
