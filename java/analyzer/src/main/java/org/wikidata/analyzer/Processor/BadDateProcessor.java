@@ -12,13 +12,13 @@ import java.util.*;
  */
 public class BadDateProcessor implements EntityDocumentProcessor {
 
-    private BufferedWriter writer1;
-    private BufferedWriter writer2;
+    private Writer writer1;
+    private Writer writer2;
 
     private String gregorianCalendar = "http://www.wikidata.org/entity/Q1985727";
     private String julianCalendar = "http://www.wikidata.org/entity/Q1985786";
 
-    public BadDateProcessor( BufferedWriter writer1, BufferedWriter writer2 ) throws IOException {
+    public BadDateProcessor( Writer writer1, Writer writer2 ) throws IOException {
         this.writer1 = writer1;
         this.writer1.write("Dates marked as Julian that are more precise than year\n----\n");
         this.writer2 = writer2;
