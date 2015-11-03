@@ -21,6 +21,11 @@ import java.util.Map;
  */
 public class CounterProcessorTest extends TestCase {
 
+    private void assertCounter( Map<String, Long> counters, String counter, int expected ) {
+        assertTrue( "Assert counter name exists '" + counter + "'", counters.containsKey( counter ) );
+        assertEquals( "Assert counter '" + counter + "'value correct", (long)counters.get( counter ), (long)expected );
+    }
+
     public void testProcessItemDocument() throws Exception {
         Map<String, Long> counters = new HashMap<>();
         CounterProcessor processor = new CounterProcessor(counters);
@@ -29,6 +34,7 @@ public class CounterProcessorTest extends TestCase {
         ItemDocument doc = ItemDocumentBuilder.forItemId(id)
                 .withLabel("label", "pt")
                 .withDescription("desc", "sv")
+                .withDescription("desc", "de")
                 .withAlias("alias1", "de")
                 .withAlias("alias2", "de")
                 .withSiteLink("Title", "sitewiki")
@@ -39,13 +45,28 @@ public class CounterProcessorTest extends TestCase {
 
         processor.processItemDocument( doc );
 
-        assertEquals((long)counters.get("item"), (long)1 );
-        assertEquals((long)counters.get("item.label"), (long)1 );
-        assertEquals((long)counters.get("item.description"), (long)1 );
-        assertEquals((long)counters.get("item.aliasgroup"), (long)1 );
-        assertEquals((long)counters.get("item.alias"), (long)2 );
-        assertEquals((long)counters.get("item.statement"), (long)1 );
-        assertEquals((long)counters.get("item.sitelink"), (long)1 );
+        this.assertCounter(counters, "item.total", 1);
+        this.assertCounter(counters, "item.label.total", 1 );
+        this.assertCounter(counters, "item.label.perlang.pt", 1 );
+        this.assertCounter(counters, "item.label.perentity.1", 1 );
+        this.assertCounter(counters, "item.description.total", 2 );
+        this.assertCounter(counters, "item.description.perlang.sv", 1 );
+        this.assertCounter(counters, "item.description.perlang.de", 1 );
+        this.assertCounter(counters, "item.description.perentity.2", 1 );
+        this.assertCounter(counters, "item.aliasgroup.total", 1 );
+        this.assertCounter(counters, "item.aliasgroup.perentity.1", 1 );
+        this.assertCounter(counters, "item.aliasgroup.perlang.de", 1 );
+        this.assertCounter(counters, "item.alias.total", 2 );
+        this.assertCounter(counters, "item.alias.perlang.de", 2 );
+        this.assertCounter(counters, "item.statement.total", 1 );
+        //TODO lower case rank?
+        this.assertCounter(counters, "item.statement.rank.NORMAL.total", 1 );
+        this.assertCounter(counters, "item.statement.mainsnak.total", 1 );
+        //TODO test an actual value snak?
+        this.assertCounter(counters, "item.statement.mainsnak.type.somevalue.total", 1 );
+        this.assertCounter(counters, "item.sitelink.total", 1 );
+        this.assertCounter(counters, "item.sitelink.perentity.1", 1 );
+        this.assertCounter(counters, "item.sitelink.persite.sitewiki", 1 );
     }
 
     public void testProcessPropertyDocument() throws Exception {
@@ -65,12 +86,12 @@ public class CounterProcessorTest extends TestCase {
 
         processor.processPropertyDocument(doc);
 
-        assertEquals((long)counters.get("property"), (long)1 );
-        assertEquals((long)counters.get("property.label"), (long)1 );
-        assertEquals((long)counters.get("property.description"), (long)1 );
-        assertEquals((long)counters.get("property.aliasgroup"), (long)1 );
-        assertEquals((long)counters.get("property.alias"), (long)2 );
-        assertEquals((long)counters.get("property.statement"), (long)1 );
-        assertEquals((long)counters.get("property.datatype.dtId1"), (long)1 );
+        this.assertCounter(counters, "property.total", 1 );
+        this.assertCounter(counters, "property.label.total", 1 );
+        this.assertCounter(counters, "property.description.total", 1 );
+        this.assertCounter(counters, "property.aliasgroup.total", 1 );
+        this.assertCounter(counters, "property.alias.total", 2 );
+        this.assertCounter(counters, "property.statement.total", 1 );
+        this.assertCounter(counters, "property.datatype.dtId1.total", 1 );
     }
 }
