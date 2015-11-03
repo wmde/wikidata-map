@@ -1,7 +1,7 @@
 package main.java.org.wikidata.analyzer;
 
 import main.java.org.wikidata.analyzer.Processor.BadDateProcessor;
-import main.java.org.wikidata.analyzer.Processor.CounterProcessor;
+import main.java.org.wikidata.analyzer.Processor.NoisyProcessor;
 import main.java.org.wikidata.analyzer.Processor.MapProcessor;
 import main.java.org.wikidata.analyzer.Fetcher.DumpFetcher;
 import org.json.simple.JSONObject;
@@ -104,7 +104,7 @@ public class WikidataAnalyzer {
         }
 
         // Fetch and process dump
-        controller.registerEntityDocumentProcessor(new CounterProcessor(), null, true);
+        controller.registerEntityDocumentProcessor(new NoisyProcessor(), null, true);
         DumpFetcher fetcher = new DumpFetcher(dataDir);
         System.out.println("Fetching dump");
         MwDumpFile dump = fetcher.getMostRecentDump();
