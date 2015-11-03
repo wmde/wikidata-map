@@ -1,8 +1,7 @@
 package main.java.org.wikidata.analyzer.Fetcher;
 
-import main.java.org.wikidata.analyzer.DumpFile.JsonLabsDumpFile;
-import main.java.org.wikidata.analyzer.DumpFile.JsonLocalDumpFileImpl;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
+import org.wikidata.wdtk.dumpfiles.MwLocalDumpFile;
 import org.wikidata.wdtk.dumpfiles.wmf.JsonOnlineDumpFile;
 import org.wikidata.wdtk.util.DirectoryManager;
 import org.wikidata.wdtk.util.DirectoryManagerImpl;
@@ -39,14 +38,18 @@ public class DumpFetcher {
         System.out.println("Latest dump date stamp is " + latestDumpDate);
 
         // 1) Try to process the file from labs storage
-        JsonLabsDumpFile labsDumpFile = new JsonLabsDumpFile(latestDumpDate);
+        MwLocalDumpFile labsDumpFile = new MwLocalDumpFile(
+                "/public/dumps/public/wikidatawiki/entities/" + latestDumpDate + "/wikidata-" + latestDumpDate + "-all.json.gz"
+        );
         if (labsDumpFile.isAvailable()) {
             System.out.println("Using dump file from labs storage");
             return labsDumpFile;
         }
 
         // 2) Try to use our local storage directory
-        JsonLocalDumpFileImpl localDumpFile = new JsonLocalDumpFileImpl(latestDumpDate, this.dataDirectory);
+        MwLocalDumpFile localDumpFile = new MwLocalDumpFile(
+                this.dataDirectory + "/dumpfiles/json-" + latestDumpDate + "/" + latestDumpDate + "-all.json.gz"
+        );
         if (localDumpFile.isAvailable()) {
             System.out.println("Using dump file from local storage");
             return localDumpFile;
