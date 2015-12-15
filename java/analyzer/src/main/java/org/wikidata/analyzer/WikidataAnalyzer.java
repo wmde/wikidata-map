@@ -1,5 +1,6 @@
 package main.java.org.wikidata.analyzer;
 
+import main.java.org.wikidata.analyzer.Fetcher.DumpDateFetcher;
 import main.java.org.wikidata.analyzer.Processor.BadDateProcessor;
 import main.java.org.wikidata.analyzer.Processor.NoisyProcessor;
 import main.java.org.wikidata.analyzer.Processor.MapProcessor;
@@ -10,6 +11,7 @@ import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -21,14 +23,20 @@ import java.util.Map;
 public class WikidataAnalyzer {
 
     /**
-     * Folder that all output should be stored in
+     * Folder that all data should be stored in
      */
     private File dataDir = null;
 
     /**
-     * The target date string or null for latest
+     * Folder that all output should be stored in.
+     * Specific to this run. dataDir + targetDate
      */
-    private String targetDate = null;
+    private File outputDir = null;
+
+    /**
+     * The target date string
+     */
+    private String targetDate;
 
     /**
      * A list of processors that need to be run
@@ -52,7 +60,7 @@ public class WikidataAnalyzer {
      *             The date of the dump to target eg. latest OR 20151230
      *             eg. java -Xmx2g -jar ~/wikidata-analyzer.jar Reference ~/data latest
      */
-    public WikidataAnalyzer(String[] args) {
+    public WikidataAnalyzer(String[] args) throws IOException {
         // Output a pretty banner
         System.out.println("******************************************");
         System.out.println("*** Wikidata Toolkit: WikidataAnalyzer ***");
@@ -66,8 +74,9 @@ public class WikidataAnalyzer {
             System.exit(1);
         }
         if (targetDate.equals("latest")) {
-            targetDate = null;
-            System.out.println("Targeting latest dump");
+            DumpDateFetcher dateFetcher = new DumpDateFetcher();
+            targetDate = dateFetcher.getLatestOnlineDumpDate();
+            System.out.println("Targeting latest dump:" + targetDate);
         } else {
             System.out.println("Targeting dump from: " + targetDate);
         }
@@ -85,6 +94,10 @@ public class WikidataAnalyzer {
             System.exit(1);
         }
         System.out.println("Using data directory: " + dataDir.getAbsolutePath());
+        outputDir = new File( dataDir.getAbsolutePath() + File.separator + targetDate );
+        if (!outputDir.exists()) {
+            Files.createDirectory( outputDir.toPath() );
+        }
         args = Arrays.copyOf(args, args.length - 1);
 
         // Get the list of processors
@@ -131,9 +144,9 @@ public class WikidataAnalyzer {
         BufferedWriter list1Writer = null;
         BufferedWriter list2Writer = null;
         if (processors.contains("BadDate")) {
-            File list1 = new File(dataDir.getAbsolutePath() + File.separator + "date_list1.txt");
+            File list1 = new File(outputDir.getAbsolutePath() + File.separator + "date_list1.txt");
             list1Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list1)));
-            File list2 = new File(dataDir.getAbsolutePath() + File.separator + "date_list2.txt");
+            File list2 = new File(outputDir.getAbsolutePath() + File.separator + "date_list2.txt");
             list2Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list2)));
             controller.registerEntityDocumentProcessor(new BadDateProcessor(list1Writer, list2Writer), null, true);
         }
@@ -142,12 +155,7 @@ public class WikidataAnalyzer {
         controller.registerEntityDocumentProcessor(new NoisyProcessor(), null, true);
         DumpFetcher fetcher = new DumpFetcher(dataDir);
         System.out.println("Fetching dump");
-        MwDumpFile dump;
-        if(targetDate == null) {
-            dump = fetcher.getMostRecentDump();
-        } else {
-            dump = fetcher.getDump(targetDate);
-        }
+        MwDumpFile dump = fetcher.getDump(targetDate);
         dump.prepareDumpFile();
         System.out.println("Processing dump");
         controller.processDump(dump);
@@ -164,7 +172,7 @@ public class WikidataAnalyzer {
 
         // Reference
         if (processors.contains("Reference")) {
-            File referenceJsonFile = new File(dataDir.getAbsolutePath() + File.separator + "reference.json");
+            File referenceJsonFile = new File(outputDir.getAbsolutePath() + File.separator + "reference.json");
             BufferedWriter referenceJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(referenceJsonFile)));
             new JSONObject(referenceCounters).writeJSONString(referenceJsonWriter);
             referenceJsonWriter.close();
@@ -173,12 +181,12 @@ public class WikidataAnalyzer {
         // Map
         if (processors.contains("Map")) {
             System.out.println("Writing map wdlabel.json");
-            File mapLabelFile = new File(dataDir.getAbsolutePath() + File.separator + "wdlabel.json");
+            File mapLabelFile = new File(outputDir.getAbsolutePath() + File.separator + "wdlabel.json");
             BufferedWriter mapLabelWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapLabelFile)));
             mapGeoData.writeJSONString(mapLabelWriter);
             mapLabelWriter.close();
             System.out.println("Writing map graph.json");
-            File mapGraphFile = new File(dataDir.getAbsolutePath() + File.separator + "graph.json");
+            File mapGraphFile = new File(outputDir.getAbsolutePath() + File.separator + "graph.json");
             BufferedWriter mapGraphWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapGraphFile)));
             mapGraphData.writeJSONString(mapGraphWriter);
             mapGraphWriter.close();

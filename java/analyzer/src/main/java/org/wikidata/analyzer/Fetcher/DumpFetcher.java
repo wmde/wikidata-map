@@ -27,18 +27,6 @@ public class DumpFetcher {
     }
 
     /**
-     * Get the latest dump using the dump data at the bottom of the online list
-     *
-     * @return MwDumpFile
-     * @throws IOException
-     */
-    public MwDumpFile getMostRecentDump() throws IOException {
-        DumpDateFetcher dateFetcher = new DumpDateFetcher();
-        String latestDumpDate = dateFetcher.getLatestOnlineDumpDate();
-        return this.getDump( latestDumpDate );
-    }
-
-    /**
      * Look for the most recent dump date online and try to retrieve as dump object with fallback:
      * 1 - Look for local dump copies (in a collection of locations)
      * 2 - Look online & download dumps
