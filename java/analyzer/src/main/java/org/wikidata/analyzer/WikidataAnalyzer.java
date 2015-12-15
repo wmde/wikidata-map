@@ -91,7 +91,7 @@ public class WikidataAnalyzer {
         controller.setOfflineMode(false);
 
         // Reference
-        Map<String,Long> referenceCounters = new HashMap<>();
+        Map<String, Long> referenceCounters = new HashMap<>();
         if (processors.contains("Reference")) {
             controller.registerEntityDocumentProcessor(new ReferenceProcessor(referenceCounters), null, true);
         }
@@ -104,11 +104,13 @@ public class WikidataAnalyzer {
         }
 
         // BadDate
+        BufferedWriter list1Writer = null;
+        BufferedWriter list2Writer = null;
         if (processors.contains("BadDate")) {
             File list1 = new File(dataDir.getAbsolutePath() + File.separator + "date_list1.txt");
-            BufferedWriter list1Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list1)));
+            list1Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list1)));
             File list2 = new File(dataDir.getAbsolutePath() + File.separator + "date_list2.txt");
-            BufferedWriter list2Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list2)));
+            list2Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list2)));
             controller.registerEntityDocumentProcessor(new BadDateProcessor(list1Writer, list2Writer), null, true);
         }
 
@@ -122,6 +124,14 @@ public class WikidataAnalyzer {
         controller.processDump(dump);
         System.out.println("Processed!");
         System.out.println("Memory Usage (MB): " + Runtime.getRuntime().totalMemory() / 1024 / 1024);
+
+        // BadDate
+        if (list1Writer != null) {
+            list1Writer.close();
+        }
+        if (list2Writer != null) {
+            list2Writer.close();
+        }
 
         // Reference
         if (processors.contains("Reference")) {
