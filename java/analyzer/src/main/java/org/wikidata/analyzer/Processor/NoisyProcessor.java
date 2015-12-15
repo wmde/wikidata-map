@@ -26,7 +26,7 @@ public class NoisyProcessor implements EntityDocumentProcessor {
         this.propertyCount++;
         //Output a line ever 100 properties
         if (this.propertyCount % 100 == 0) {
-            System.out.println("Processed " + this.itemCount + " properties " + Runtime.getRuntime().totalMemory() / 1024 / 1024 + "MB mem used");
+            System.out.println("Processed " + this.propertyCount + " properties " + Runtime.getRuntime().totalMemory() / 1024 / 1024 + "MB mem used");
         }
     }
 
