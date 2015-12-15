@@ -117,6 +117,7 @@ public class WikidataAnalyzer {
         DumpFetcher fetcher = new DumpFetcher(dataDir);
         System.out.println("Fetching dump");
         MwDumpFile dump = fetcher.getMostRecentDump();
+        dump.prepareDumpFile();
         System.out.println("Processing dump");
         controller.processDump(dump);
         System.out.println("Processed!");

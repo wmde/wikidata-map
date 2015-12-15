@@ -10,6 +10,7 @@ import org.wikidata.wdtk.util.WebResourceFetcherImpl;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,17 +48,19 @@ public class DumpFetcher {
         //Stat1002 dump location
         locationList.add("/mnt/data/xmldatadumps/public/wikidatawiki/entities/" + latestDumpDate + "/wikidata-" + latestDumpDate + "-all.json.gz");
         for (String dumpLocation: locationList) {
-            MwLocalDumpFile localDumpFile = new MwLocalDumpFile( dumpLocation );
-            if( localDumpFile.isAvailable() ) {
-                System.out.println("Using dump file from: " + dumpLocation);
-                return localDumpFile;
+            if (Files.exists(Paths.get(dumpLocation)) && Files.isReadable(Paths.get(dumpLocation))) {
+                MwLocalDumpFile localDumpFile = new MwLocalDumpFile( dumpLocation );
+                if( localDumpFile.isAvailable() ) {
+                    System.out.println("Using dump file from: " + dumpLocation);
+                    return localDumpFile;
+                }
             }
         }
 
         // Fallback to downloading the dump ourselves
         DirectoryManager localDirectoryManager = new DirectoryManagerImpl(
                 Paths.get(this.dataDirectory.getAbsolutePath() + File.separator + "dumpfiles"),
-                true
+                false
         );
         WebResourceFetcher fetcher = new WebResourceFetcherImpl();
         JsonOnlineDumpFile onlineDumpFile = new JsonOnlineDumpFile(
