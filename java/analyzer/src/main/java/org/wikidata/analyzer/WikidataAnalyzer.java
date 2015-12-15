@@ -104,11 +104,11 @@ public class WikidataAnalyzer {
         }
 
         // BadDate
-        File list1 = new File(dataDir.getAbsolutePath() + File.separator + "date_list1.txt");
-        BufferedWriter list1Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list1)));
-        File list2 = new File(dataDir.getAbsolutePath() + File.separator + "date_list2.txt");
-        BufferedWriter list2Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list2)));
         if (processors.contains("BadDate")) {
+            File list1 = new File(dataDir.getAbsolutePath() + File.separator + "date_list1.txt");
+            BufferedWriter list1Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list1)));
+            File list2 = new File(dataDir.getAbsolutePath() + File.separator + "date_list2.txt");
+            BufferedWriter list2Writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(list2)));
             controller.registerEntityDocumentProcessor(new BadDateProcessor(list1Writer, list2Writer), null, true);
         }
 
@@ -124,9 +124,12 @@ public class WikidataAnalyzer {
         System.out.println("Memory Usage (MB): " + Runtime.getRuntime().totalMemory() / 1024 / 1024);
 
         // Reference
-        File referenceJsonFile = new File(dataDir.getAbsolutePath() + File.separator + "reference.json");
-        BufferedWriter referenceJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(referenceJsonFile)));
-        new JSONObject(referenceCounters).writeJSONString( referenceJsonWriter );
+        if (processors.contains("Reference")) {
+            File referenceJsonFile = new File(dataDir.getAbsolutePath() + File.separator + "reference.json");
+            BufferedWriter referenceJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(referenceJsonFile)));
+            new JSONObject(referenceCounters).writeJSONString(referenceJsonWriter);
+            referenceJsonWriter.close();
+        }
 
         // Map
         if (processors.contains("Map")) {
@@ -141,10 +144,6 @@ public class WikidataAnalyzer {
             mapGraphData.writeJSONString(mapGraphWriter);
             mapGraphWriter.close();
         }
-
-        // BadDate
-        list1Writer.close();
-        list2Writer.close();
 
         // Finish up
         System.out.println("All Done!");
