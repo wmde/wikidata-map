@@ -27,9 +27,7 @@ public class DumpFetcher {
     }
 
     /**
-     * Look for the most recent dump date online and try to retrieve as dump object with fallback:
-     * 1 - Look for local dump copies (in a collection of locations)
-     * 2 - Look online & download dumps
+     * Get the latest dump using the dump data at the bottom of the online list
      *
      * @return MwDumpFile
      * @throws IOException
@@ -37,16 +35,27 @@ public class DumpFetcher {
     public MwDumpFile getMostRecentDump() throws IOException {
         DumpDateFetcher dateFetcher = new DumpDateFetcher();
         String latestDumpDate = dateFetcher.getLatestOnlineDumpDate();
-        System.out.println("Latest dump date stamp is " + latestDumpDate);
+        return this.getDump( latestDumpDate );
+    }
 
+    /**
+     * Look for the most recent dump date online and try to retrieve as dump object with fallback:
+     * 1 - Look for local dump copies (in a collection of locations)
+     * 2 - Look online & download dumps
+     *
+     * @return MwDumpFile
+     * @throws IOException
+     */
+    public MwDumpFile getDump( String dumpDate ) throws IOException {
+        System.out.println("Getting dump with date " + dumpDate);
         // Look for the dump in a list of possible local locations
         List<String> locationList = new ArrayList<>();
         //Local data dir location
-        locationList.add(this.dataDirectory + "/dumpfiles/json-" + latestDumpDate + "/" + latestDumpDate + "-all.json.gz");
+        locationList.add(this.dataDirectory + "/dumpfiles/json-" + dumpDate + "/" + dumpDate + "-all.json.gz");
         //Labs dump location
-        locationList.add("/public/dumps/public/wikidatawiki/entities/" + latestDumpDate + "/wikidata-" + latestDumpDate + "-all.json.gz");
+        locationList.add("/public/dumps/public/wikidatawiki/entities/" + dumpDate + "/wikidata-" + dumpDate + "-all.json.gz");
         //Stat1002 dump location
-        locationList.add("/mnt/data/xmldatadumps/public/wikidatawiki/entities/" + latestDumpDate + "/wikidata-" + latestDumpDate + "-all.json.gz");
+        locationList.add("/mnt/data/xmldatadumps/public/wikidatawiki/entities/" + dumpDate + "/wikidata-" + dumpDate + "-all.json.gz");
         for (String dumpLocation: locationList) {
             if (Files.exists(Paths.get(dumpLocation)) && Files.isReadable(Paths.get(dumpLocation))) {
                 MwLocalDumpFile localDumpFile = new MwLocalDumpFile( dumpLocation );
@@ -64,7 +73,7 @@ public class DumpFetcher {
         );
         WebResourceFetcher fetcher = new WebResourceFetcherImpl();
         JsonOnlineDumpFile onlineDumpFile = new JsonOnlineDumpFile(
-                latestDumpDate,
+                dumpDate,
                 "wikidatawiki",
                 fetcher,
                 localDirectoryManager
@@ -74,6 +83,6 @@ public class DumpFetcher {
             return onlineDumpFile;
         }
 
-        throw new IOException("Failed to get most recent dump from any sources");
+        throw new IOException("Failed to get dump from any sources");
     }
 }
