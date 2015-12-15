@@ -11,6 +11,8 @@ import org.wikidata.wdtk.util.WebResourceFetcherImpl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Addshore
@@ -25,9 +27,8 @@ public class DumpFetcher {
 
     /**
      * Look for the most recent dump date online and try to retrieve as dump object with fallback:
-     * 1 - Look for dumps in location expected on labs
-     * 2 - Look for dumps in the dump directory for this tool
-     * 3 - Look online & download dumps
+     * 1 - Look for local dump copies (in a collection of locations)
+     * 2 - Look online & download dumps
      *
      * @return MwDumpFile
      * @throws IOException
@@ -37,25 +38,23 @@ public class DumpFetcher {
         String latestDumpDate = dateFetcher.getLatestOnlineDumpDate();
         System.out.println("Latest dump date stamp is " + latestDumpDate);
 
-        // 1) Try to process the file from labs storage
-        MwLocalDumpFile labsDumpFile = new MwLocalDumpFile(
-                "/public/dumps/public/wikidatawiki/entities/" + latestDumpDate + "/wikidata-" + latestDumpDate + "-all.json.gz"
-        );
-        if (labsDumpFile.isAvailable()) {
-            System.out.println("Using dump file from labs storage");
-            return labsDumpFile;
+        // Look for the dump in a list of possible local locations
+        List<String> locationList = new ArrayList<>();
+        //Local data dir location
+        locationList.add(this.dataDirectory + "/dumpfiles/json-" + latestDumpDate + "/" + latestDumpDate + "-all.json.gz");
+        //Labs dump location
+        locationList.add("/public/dumps/public/wikidatawiki/entities/" + latestDumpDate + "/wikidata-" + latestDumpDate + "-all.json.gz");
+        //Stat1002 dump location
+        locationList.add("/mnt/data/xmldatadumps/public/wikidatawiki/entities/" + latestDumpDate + "/wikidata-" + latestDumpDate + "-all.json.gz");
+        for (String dumpLocation: locationList) {
+            MwLocalDumpFile localDumpFile = new MwLocalDumpFile( dumpLocation );
+            if( localDumpFile.isAvailable() ) {
+                System.out.println("Using dump file from: " + dumpLocation);
+                return localDumpFile;
+            }
         }
 
-        // 2) Try to use our local storage directory
-        MwLocalDumpFile localDumpFile = new MwLocalDumpFile(
-                this.dataDirectory + "/dumpfiles/json-" + latestDumpDate + "/" + latestDumpDate + "-all.json.gz"
-        );
-        if (localDumpFile.isAvailable()) {
-            System.out.println("Using dump file from local storage");
-            return localDumpFile;
-        }
-
-        // 3) Fallback to downloading the dump ourselves
+        // Fallback to downloading the dump ourselves
         DirectoryManager localDirectoryManager = new DirectoryManagerImpl(
                 Paths.get(this.dataDirectory.getAbsolutePath() + File.separator + "dumpfiles"),
                 true
