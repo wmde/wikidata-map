@@ -76,7 +76,7 @@ public class WikidataAnalyzer {
         if (targetDate.equals("latest")) {
             DumpDateFetcher dateFetcher = new DumpDateFetcher();
             targetDate = dateFetcher.getLatestOnlineDumpDate();
-            System.out.println("Targeting latest dump:" + targetDate);
+            System.out.println("Targeting latest dump: " + targetDate);
         } else {
             System.out.println("Targeting dump from: " + targetDate);
         }
