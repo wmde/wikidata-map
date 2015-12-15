@@ -26,6 +26,11 @@ public class WikidataAnalyzer {
     private File dataDir = null;
 
     /**
+     * The target date string or null for latest
+     */
+    private String targetDate = null;
+
+    /**
      * A list of processors that need to be run
      */
     private List processors = null;
@@ -42,12 +47,31 @@ public class WikidataAnalyzer {
 
     /**
      * @param args Command line arguments
+     *             A collection of Processors to run (each as a single argument) eg. BadDate Map
+     *             The data directory to use eg. ~/data
+     *             The date of the dump to target eg. latest OR 20151230
+     *             eg. java -Xmx2g -jar ~/wikidata-analyzer.jar Reference ~/data latest
      */
     public WikidataAnalyzer(String[] args) {
         // Output a pretty banner
         System.out.println("******************************************");
         System.out.println("*** Wikidata Toolkit: WikidataAnalyzer ***");
         System.out.println("******************************************");
+
+        // Get the target date
+        try {
+            targetDate = args[args.length - 1];
+        } catch (ArrayIndexOutOfBoundsException exception) {
+            System.out.println("Error: Not enough parameters. You must pass a data dir and a target date!");
+            System.exit(1);
+        }
+        if (targetDate.equals("latest")) {
+            targetDate = null;
+            System.out.println("Targeting latest dump");
+        } else {
+            System.out.println("Targeting dump from: " + targetDate);
+        }
+        args = Arrays.copyOf(args, args.length - 1);
 
         // Get the data directory
         try {
@@ -57,7 +81,7 @@ public class WikidataAnalyzer {
                 System.exit(1);
             }
         } catch (ArrayIndexOutOfBoundsException exception) {
-            System.out.println("Error: You must pass a data directory as a parameter.");
+            System.out.println("Error: Not enough parameters. You must pass a data dir and a target date!");
             System.exit(1);
         }
         System.out.println("Using data directory: " + dataDir.getAbsolutePath());
@@ -118,7 +142,12 @@ public class WikidataAnalyzer {
         controller.registerEntityDocumentProcessor(new NoisyProcessor(), null, true);
         DumpFetcher fetcher = new DumpFetcher(dataDir);
         System.out.println("Fetching dump");
-        MwDumpFile dump = fetcher.getMostRecentDump();
+        MwDumpFile dump;
+        if(targetDate == null) {
+            dump = fetcher.getMostRecentDump();
+        } else {
+            dump = fetcher.getDump(targetDate);
+        }
         dump.prepareDumpFile();
         System.out.println("Processing dump");
         controller.processDump(dump);
