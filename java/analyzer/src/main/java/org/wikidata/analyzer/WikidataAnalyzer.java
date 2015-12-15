@@ -4,13 +4,16 @@ import main.java.org.wikidata.analyzer.Processor.BadDateProcessor;
 import main.java.org.wikidata.analyzer.Processor.NoisyProcessor;
 import main.java.org.wikidata.analyzer.Processor.MapProcessor;
 import main.java.org.wikidata.analyzer.Fetcher.DumpFetcher;
+import main.java.org.wikidata.analyzer.Processor.ReferenceProcessor;
 import org.json.simple.JSONObject;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Addshore
@@ -87,6 +90,12 @@ public class WikidataAnalyzer {
         DumpProcessingController controller = new DumpProcessingController("wikidatawiki");
         controller.setOfflineMode(false);
 
+        // Reference
+        Map<String,Long> referenceCounters = new HashMap<>();
+        if (processors.contains("Reference")) {
+            controller.registerEntityDocumentProcessor(new ReferenceProcessor(referenceCounters), null, true);
+        }
+
         // Map
         JSONObject mapGeoData = new JSONObject();
         JSONObject mapGraphData = new JSONObject();
@@ -112,6 +121,11 @@ public class WikidataAnalyzer {
         controller.processDump(dump);
         System.out.println("Processed!");
         System.out.println("Memory Usage (MB): " + Runtime.getRuntime().totalMemory() / 1024 / 1024);
+
+        // Reference
+        File referenceJsonFile = new File(dataDir.getAbsolutePath() + File.separator + "reference.json");
+        BufferedWriter referenceJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(referenceJsonFile)));
+        new JSONObject(referenceCounters).writeJSONString( referenceJsonWriter );
 
         // Map
         if (processors.contains("Map")) {

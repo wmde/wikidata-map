@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * @author Addshore
  */
-public class ReferenceProcessor {
+public class ReferenceProcessor implements EntityDocumentProcessor {
 
     private Map<String, Long> counters;
 
