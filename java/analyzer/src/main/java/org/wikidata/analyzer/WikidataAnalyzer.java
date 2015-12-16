@@ -1,11 +1,8 @@
 package main.java.org.wikidata.analyzer;
 
 import main.java.org.wikidata.analyzer.Fetcher.DumpDateFetcher;
-import main.java.org.wikidata.analyzer.Processor.BadDateProcessor;
-import main.java.org.wikidata.analyzer.Processor.NoisyProcessor;
-import main.java.org.wikidata.analyzer.Processor.MapProcessor;
+import main.java.org.wikidata.analyzer.Processor.*;
 import main.java.org.wikidata.analyzer.Fetcher.DumpFetcher;
-import main.java.org.wikidata.analyzer.Processor.ReferenceProcessor;
 import org.json.simple.JSONObject;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
@@ -151,6 +148,14 @@ public class WikidataAnalyzer {
             controller.registerEntityDocumentProcessor(new BadDateProcessor(list1Writer, list2Writer), null, true);
         }
 
+        //Physikerwelt
+        BufferedWriter physikerweltWriter = null;
+        if (processors.contains("Physikerwelt")) {
+            File physikerweltList = new File(outputDir.getAbsolutePath() + File.separator + "Physikerwelt.txt");
+            physikerweltWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(physikerweltList)));
+            controller.registerEntityDocumentProcessor(new PhysikerweltProcessor(physikerweltWriter), null, true);
+        }
+
         // Fetch and process dump
         controller.registerEntityDocumentProcessor(new NoisyProcessor(), null, true);
         DumpFetcher fetcher = new DumpFetcher(dataDir);
@@ -161,6 +166,11 @@ public class WikidataAnalyzer {
         controller.processDump(dump);
         System.out.println("Processed!");
         System.out.println("Memory Usage (MB): " + Runtime.getRuntime().totalMemory() / 1024 / 1024);
+
+        // Physikerwelt
+        if (physikerweltWriter != null) {
+            physikerweltWriter.close();
+        }
 
         // BadDate
         if (list1Writer != null) {
