@@ -133,6 +133,12 @@ public class WikidataAnalyzer {
             controller.registerEntityDocumentProcessor(new ReferenceProcessor(referenceCounters), null, true);
         }
 
+        // Qualifier
+        Map<String, Long> qualifierCounters = new HashMap<>();
+        if (processors.contains("Qualifier")) {
+            controller.registerEntityDocumentProcessor(new ReferenceProcessor(qualifierCounters), null, true);
+        }
+
         // Map
         JSONObject mapGeoData = new JSONObject();
         JSONObject mapGraphData = new JSONObject();
@@ -168,6 +174,14 @@ public class WikidataAnalyzer {
         }
         if (list2Writer != null) {
             list2Writer.close();
+        }
+
+        // Qualifier
+        if (processors.contains("Qualifier")) {
+            File qualifierJsonFile = new File(outputDir.getAbsolutePath() + File.separator + "qualifier.json");
+            BufferedWriter qualifierJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(qualifierJsonFile)));
+            new JSONObject(qualifierCounters).writeJSONString(qualifierJsonWriter);
+            qualifierJsonWriter.close();
         }
 
         // Reference
