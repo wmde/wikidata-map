@@ -1,11 +1,8 @@
 package main.java.org.wikidata.analyzer;
 
 import main.java.org.wikidata.analyzer.Fetcher.DumpDateFetcher;
-import main.java.org.wikidata.analyzer.Processor.BadDateProcessor;
-import main.java.org.wikidata.analyzer.Processor.NoisyProcessor;
-import main.java.org.wikidata.analyzer.Processor.MapProcessor;
+import main.java.org.wikidata.analyzer.Processor.*;
 import main.java.org.wikidata.analyzer.Fetcher.DumpFetcher;
-import main.java.org.wikidata.analyzer.Processor.ReferenceProcessor;
 import org.json.simple.JSONObject;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
 import org.wikidata.wdtk.dumpfiles.MwDumpFile;
@@ -136,7 +133,7 @@ public class WikidataAnalyzer {
         // Qualifier
         Map<String, Long> qualifierCounters = new HashMap<>();
         if (processors.contains("Qualifier")) {
-            controller.registerEntityDocumentProcessor(new ReferenceProcessor(qualifierCounters), null, true);
+            controller.registerEntityDocumentProcessor(new QualifierProcessor(qualifierCounters), null, true);
         }
 
         // Map
