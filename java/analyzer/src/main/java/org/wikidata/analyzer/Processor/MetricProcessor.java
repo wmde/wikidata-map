@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * @author Addshore
  */
-public class ReferenceProcessor implements EntityDocumentProcessor {
+public class MetricProcessor implements EntityDocumentProcessor {
 
     private Map<String, Long> counters;
 
@@ -16,7 +16,7 @@ public class ReferenceProcessor implements EntityDocumentProcessor {
 
     private List<String> referenceProperties = new ArrayList<>();
 
-    public ReferenceProcessor(Map<String, Long> counters) {
+    public MetricProcessor(Map<String, Long> counters) {
         this.counters = counters;
         this.populateWikimedias();
         this.populateReferenceProperties();
@@ -360,6 +360,7 @@ public class ReferenceProcessor implements EntityDocumentProcessor {
         Snak mainSnak = statement.getClaim().getMainSnak();
         String propertyString = mainSnak.getPropertyId().getId();
 
+        this.increment("qualifiers", Iterators.size(statement.getClaim().getAllQualifiers()));
         this.increment("references", statement.getReferences().size());
 
         if( statement.getReferences().size() == 0 ) {

@@ -124,16 +124,10 @@ public class WikidataAnalyzer {
         DumpProcessingController controller = new DumpProcessingController("wikidatawiki");
         controller.setOfflineMode(false);
 
-        // Reference
-        Map<String, Long> referenceCounters = new HashMap<>();
-        if (processors.contains("Reference")) {
-            controller.registerEntityDocumentProcessor(new ReferenceProcessor(referenceCounters), null, true);
-        }
-
-        // Qualifier
-        Map<String, Long> qualifierCounters = new HashMap<>();
-        if (processors.contains("Qualifier")) {
-            controller.registerEntityDocumentProcessor(new QualifierProcessor(qualifierCounters), null, true);
+        // Metric
+        Map<String, Long> metricsCounters = new HashMap<>();
+        if (processors.contains("Metric")) {
+            controller.registerEntityDocumentProcessor(new MetricProcessor(metricsCounters), null, true);
         }
 
         // Map
@@ -173,20 +167,12 @@ public class WikidataAnalyzer {
             list2Writer.close();
         }
 
-        // Qualifier
-        if (processors.contains("Qualifier")) {
-            File qualifierJsonFile = new File(outputDir.getAbsolutePath() + File.separator + "qualifier.json");
-            BufferedWriter qualifierJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(qualifierJsonFile)));
-            new JSONObject(qualifierCounters).writeJSONString(qualifierJsonWriter);
-            qualifierJsonWriter.close();
-        }
-
-        // Reference
-        if (processors.contains("Reference")) {
-            File referenceJsonFile = new File(outputDir.getAbsolutePath() + File.separator + "reference.json");
-            BufferedWriter referenceJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(referenceJsonFile)));
-            new JSONObject(referenceCounters).writeJSONString(referenceJsonWriter);
-            referenceJsonWriter.close();
+        // Metric
+        if (processors.contains("Metric")) {
+            File metricsJsonFile = new File(outputDir.getAbsolutePath() + File.separator + "metrics.json");
+            BufferedWriter metricsJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(metricsJsonFile)));
+            new JSONObject(metricsCounters).writeJSONString(metricsJsonWriter);
+            metricsJsonWriter.close();
         }
 
         // Map

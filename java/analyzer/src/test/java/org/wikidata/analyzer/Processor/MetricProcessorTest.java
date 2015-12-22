@@ -1,7 +1,7 @@
 package test.java.org.wikidata.analyzer.Processor;
 
 import junit.framework.TestCase;
-import main.java.org.wikidata.analyzer.Processor.ReferenceProcessor;
+import main.java.org.wikidata.analyzer.Processor.MetricProcessor;
 import org.wikidata.wdtk.datamodel.helpers.*;
 import org.wikidata.wdtk.datamodel.implementation.DataObjectFactoryImpl;
 import org.wikidata.wdtk.datamodel.implementation.ItemIdValueImpl;
@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author Addshore
  */
-public class ReferenceProcessorTest extends TestCase {
+public class MetricProcessorTest extends TestCase {
 
     private void assertCounter( Map<String, Long> counters, String counter, int expected ) {
         assertTrue( "Assert counter name exists '" + counter + "'", counters.containsKey( counter ) );
@@ -24,13 +24,14 @@ public class ReferenceProcessorTest extends TestCase {
 
     public void testProcessItemDocument() throws Exception {
         Map<String, Long> counters = new HashMap<>();
-        ReferenceProcessor processor = new ReferenceProcessor(counters);
+        MetricProcessor processor = new MetricProcessor(counters);
 
         ItemIdValue id = ItemIdValueImpl.create("Q42", "foo");
         ItemDocument doc = ItemDocumentBuilder.forItemId(id)
                 .withStatement(
                         StatementBuilder
                                 .forSubjectAndProperty(id, PropertyIdValueImpl.create("P1", "bar"))
+                                .withQualifier(Datamodel.makeValueSnak(PropertyIdValueImpl.create("P1", "bar"), Datamodel.makeStringValue("baz")))
                                 .withReference(ReferenceBuilder.newInstance().withNoValue(PropertyIdValueImpl.create("P143", "Foo")).build())
                                 .withReference(ReferenceBuilder.newInstance().withSomeValue(PropertyIdValueImpl.create("P99", "Foo")).build())
                                 .withReference(ReferenceBuilder.newInstance().withPropertyValue(
@@ -42,6 +43,8 @@ public class ReferenceProcessorTest extends TestCase {
                 .withStatement(
                         StatementBuilder
                                 .forSubjectAndProperty(id, PropertyIdValueImpl.create("P1", "bar"))
+                                .withQualifier(Datamodel.makeValueSnak(PropertyIdValueImpl.create("P1", "bar"), Datamodel.makeStringValue("baz")))
+                                .withQualifier(Datamodel.makeValueSnak(PropertyIdValueImpl.create("P1", "bar"), Datamodel.makeStringValue("baz")))
                                 .withReference(
                                         ReferenceBuilder.newInstance()
                                                 .withPropertyValue(
@@ -61,6 +64,7 @@ public class ReferenceProcessorTest extends TestCase {
 
         processor.processItemDocument( doc );
 
+        this.assertCounter(counters, "qualifiers", 3);
         this.assertCounter(counters, "references", 4);
         this.assertCounter(counters, "statements.referenced", 2 );
         this.assertCounter(counters, "statements.unreferenced", 1 );
