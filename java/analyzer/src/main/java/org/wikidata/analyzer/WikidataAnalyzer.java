@@ -130,6 +130,12 @@ public class WikidataAnalyzer {
             controller.registerEntityDocumentProcessor(new MetricProcessor(metricsCounters), null, true);
         }
 
+        // MonolingualText
+        Map<String, Long> monotextCounters = new HashMap<>();
+        if (processors.contains("MonolingualText")) {
+            controller.registerEntityDocumentProcessor(new MonolingualTextProcessor(monotextCounters), null, true);
+        }
+
         // Map
         JSONObject mapGeoData = new JSONObject();
         JSONObject mapGraphData = new JSONObject();
@@ -173,6 +179,14 @@ public class WikidataAnalyzer {
             BufferedWriter metricsJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(metricsJsonFile)));
             new JSONObject(metricsCounters).writeJSONString(metricsJsonWriter);
             metricsJsonWriter.close();
+        }
+
+        // MonolingualText
+        if (processors.contains("MonolingualText")) {
+            File monotextJsonFile = new File(outputDir.getAbsolutePath() + File.separator + "monotext.json");
+            BufferedWriter monotextJsonWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(monotextJsonFile)));
+            new JSONObject(monotextCounters).writeJSONString(monotextJsonWriter);
+            monotextJsonWriter.close();
         }
 
         // Map
