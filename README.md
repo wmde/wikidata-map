@@ -1,7 +1,4 @@
-wikidata-analysis
+DEPRECATED REPO
 =================
 
-Code is written in a combination of:
- - Java
- - Python
- - HTML & JavaScript
+Please use https://gerrit.wikimedia.org/r/#/admin/projects/analytics/wmde/toolkit-analyzer
