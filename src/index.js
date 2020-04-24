@@ -1,13 +1,19 @@
 import config from './config';
 
-const wdMapCanvases = [];
+const wdMapCanvases = {};
 
 function showDensity(x, y, url) {
-	if (!wdMapCanvases[`${x}x${y}`]) {
-		wdMapCanvases[`${x}x${y}`] = createAndRenderDensityCanvas(x, y, url)
+	const resolutionKey = `${x}x${y}`;
+	if (!wdMapCanvases[resolutionKey]) {
+		wdMapCanvases[resolutionKey] = createAndRenderDensityCanvas(x, y, url)
 	}
-	wdMapCanvases.forEach(canvas => canvas.style.display = 'none');
-	wdMapCanvases[`${x}x${y}`].style.display = 'block;'
+
+	for (const resolution in wdMapCanvases) {
+		const canvas = wdMapCanvases[resolution];
+		canvas.style.display = 'none';
+	}
+
+	wdMapCanvases[resolutionKey].style.display = 'block';
 }
 
 function createAndRenderDensityCanvas(x, y, url) {
