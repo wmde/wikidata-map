@@ -41,7 +41,7 @@ function createAndRenderDensityCanvas(x, y, url) {
 			const perfP = document.getElementById("performance");
 			perfP.textContent += ` Render for ${x}x${y} took ${(tEndRender - tStartRender)} milliseconds.`;
 
-			if (x > 3000) {
+			if (x < 3000) {
 				const riverUrl = 'https://gist.githubusercontent.com/addshore/01c9aa9c449b8208c1da06010017a469/raw/54fefc91332dcb779abe5b862c262558236dacb5/map-20200424-3840-2160-relations-P403.csv';
 				fetch(riverUrl, { mode: "cors" })
 					.then((response) => response.text())
