@@ -1,13 +1,19 @@
 import config from './config';
 
-const wdMapCanvases = [];
+const wdMapCanvases = {};
 
 function showDensity(x, y, url) {
-	if (!wdMapCanvases[`${x}x${y}`]) {
-		wdMapCanvases[`${x}x${y}`] = createAndRenderDensityCanvas(x, y, url)
+	const resolutionKey = `${x}x${y}`;
+	if (!wdMapCanvases[resolutionKey]) {
+		wdMapCanvases[resolutionKey] = createAndRenderDensityCanvas(x, y, url)
 	}
-	wdMapCanvases.forEach(canvas => canvas.style.display = 'none');
-	wdMapCanvases[`${x}x${y}`].style.display = 'block;'
+
+	for (const resolution in wdMapCanvases) {
+		const canvas = wdMapCanvases[resolution];
+		canvas.style.display = 'none';
+	}
+
+	wdMapCanvases[resolutionKey].style.display = 'block';
 }
 
 function createAndRenderDensityCanvas(x, y, url) {
@@ -39,4 +45,13 @@ function createAndRenderDensityCanvas(x, y, url) {
 	return canvas;
 }
 
-showDensity(config[0].x, config[0].y, config[0].url);
+const form = document.getElementById('resolutionSelector');
+
+function updateCanvas() {
+	const index = form.querySelector('input[name="resolution"]:checked').value;
+	console.log(`switching to ${index}`);
+	showDensity(config[index].x, config[index].y, config[index].url);
+}
+
+updateCanvas();
+form.addEventListener('change', updateCanvas);
