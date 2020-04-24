@@ -20,7 +20,6 @@ fetch(dataUrl, { mode: "cors" })
 			ctx.fillRect(x, y, 1, 1);
 		});
 		const tEndRender = performance.now();
-		console.log(
-			"Render took " + (tEndRender - tStartRender) + " milliseconds."
-		);
+		const perfP = document.getElementById("performance");
+		perfP.textContent = "Render took " + (tEndRender - tStartRender) + " milliseconds.";
 	});
