@@ -39,4 +39,13 @@ function createAndRenderDensityCanvas(x, y, url) {
 	return canvas;
 }
 
-showDensity(config[0].x, config[0].y, config[0].url);
+const form = document.getElementById('resolutionSelector');
+
+function updateCanvas() {
+	const index = form.querySelector('input[name="resolution"]:checked').value;
+	console.log(`switching to ${index}`);
+	showDensity(config[index].x, config[index].y, config[index].url);
+}
+
+updateCanvas();
+form.addEventListener('change', updateCanvas);

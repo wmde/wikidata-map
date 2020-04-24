@@ -4,10 +4,11 @@ const config = [
 		y: 1080,
 		url: "https://gist.githubusercontent.com/addshore/e51a9f03decc66d9267f19323d1ac0cf/raw/f0c0aba2e1cc39a2ff14ee14ace81d1e51bac43b/map-20200424-1920-1080-pixels.csv",
 	},
-	// {
-	// 	x: 3840,
-	// 	y: 2160,
-	// }
+	{
+		x: 3840,
+		y: 2160,
+		url: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-20200424-3840-2160-pixels.csv',
+	}
 ];
 
 export default config;
