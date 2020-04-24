@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
     <title>Wikidata Map</title>
+    <meta charset="utf-8">
 </head>
 <body>
-<canvas id='wdmap' width="1950" height="1080">
+<canvas id='wdmap'>
 
 </canvas>
-<script src="main.js"></script>
+<p id="performance"></p>
+<!--This is needed when we are using the build step again: <script src="main.js"></script>-->
+<script type="module" src="../src/index.js"></script>
 </body>
 </html>
