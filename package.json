@@ -1,9 +1,9 @@
 {
-  "name": "wikidata-analysis",
+  "name": "wikidata-map",
   "version": "1.0.0",
   "description": "frontend to render density of wikidata items on a map",
   "main": "index.js",
-  "repository": "git@github.com:wmde/wikidata-analysis.git",
+  "repository": "git@github.com:wmde/wikidata-map.git",
   "author": "Michael Große <mic.grosse@googlemail.com>",
   "license": "MIT",
   "devDependencies": {
