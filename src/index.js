@@ -3,10 +3,10 @@ import { drawDots, drawRivers } from './draw.js';
 
 const wdMapCanvases = {};
 
-function showDensity(x, y, url) {
+function showDensity(x, y, url, riverUrl) {
 	const resolutionKey = `${x}x${y}`;
 	if (!wdMapCanvases[resolutionKey]) {
-		wdMapCanvases[resolutionKey] = createAndRenderDensityCanvas(x, y, url)
+		wdMapCanvases[resolutionKey] = createAndRenderDensityCanvas(x, y, url, riverUrl)
 	}
 
 	for (const resolution in wdMapCanvases) {
@@ -24,7 +24,7 @@ async function updateProgress(current, total) {
 	});
 }
 
-function createAndRenderDensityCanvas(x, y, url) {
+function createAndRenderDensityCanvas(x, y, url, riverUrl) {
 	const canvas = document.createElement('canvas');
 	canvas.width = x;
 	canvas.height = y;
@@ -46,17 +46,16 @@ function createAndRenderDensityCanvas(x, y, url) {
 			perfP.textContent += ` Rendering ${key} took ${Math.ceil(tEndRender - tStartRender)} milliseconds.`;
 		})
 		.then(() => {
-			if (x > 3000) {
+			if (!riverUrl) {
 				return;
 			}
-			const riverUrl = 'https://gist.githubusercontent.com/addshore/01c9aa9c449b8208c1da06010017a469/raw/54fefc91332dcb779abe5b862c262558236dacb5/map-20200424-3840-2160-relations-P403.csv';
 			return fetch(riverUrl, { mode: "cors" });
 		})
 		.then((response) => response.text())
 		.then(async (data) => {
 			const tStartRender = performance.now();
 
-			await drawRivers(data, ctx);
+			await drawRivers(data, ctx, canvas.width);
 
 			const tEndRender = performance.now();
 			const perfP = document.getElementById( 'performance' );
@@ -70,7 +69,7 @@ const form = document.getElementById('resolutionSelector');
 
 function updateCanvas() {
 	const index = form.querySelector('input[name="resolution"]:checked').value;
-	showDensity(config[index].x, config[index].y, config[index].url);
+	showDensity(config[index].x, config[index].y, config[index].url, config[index].riverUrl);
 }
 
 updateCanvas();
