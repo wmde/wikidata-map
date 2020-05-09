@@ -1,5 +1,11 @@
 import config from './config.js';
-import { drawDots, drawRivers } from './draw.js';
+import { drawDot, drawLine } from './draw.js';
+import {
+	chunksToLinesReadableStream,
+	csvLinesToPartsReadableStream,
+	valuesToBatchedValuesReadableStream,
+	batchedToDrawingReadableStream
+} from './streams.js';
 
 const wdMapCanvases = {};
 
@@ -34,33 +40,22 @@ function createAndRenderDensityCanvas(x, y, url, riverUrl) {
 	document.querySelector('body').appendChild(canvas);
 
 	fetch(url, { mode: "cors" })
-		.then((response) => response.text())
-		.then(async (data) => {
-			const tStartRender = performance.now();
-
-			await drawDots(data, ctx, updateProgress);
-
-			const tEndRender = performance.now();
-			const perfP = document.getElementById("performance");
-			const key = `${x}x${y}`;
-			perfP.textContent += ` Rendering ${key} took ${Math.ceil(tEndRender - tStartRender)} milliseconds.`;
-		})
+		.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
+		.then(lineStream => {return csvLinesToPartsReadableStream( lineStream.getReader() )})
+		.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 1000 )})
+		.then(batchedStream => {return batchedToDrawingReadableStream( batchedStream.getReader(), drawDot, ctx )})
 		.then(() => {
-			if (!riverUrl) {
-				return;
+			// Rivers must run after the main render as they currently use the same canvas and must be on top
+			if(riverUrl) {
+				return fetch(riverUrl, { mode: "cors" })
+					.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
+					.then(lineStream => {return csvLinesToPartsReadableStream( lineStream.getReader() )})
+					.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 100 )})
+					.then(batchedStream => {return batchedToDrawingReadableStream( batchedStream.getReader(), drawLine, ctx )})
+					.catch(err => console.error(err));
 			}
-			return fetch(riverUrl, { mode: "cors" });
 		})
-		.then((response) => response.text())
-		.then(async (data) => {
-			const tStartRender = performance.now();
-
-			await drawRivers(data, ctx, canvas.width);
-
-			const tEndRender = performance.now();
-			const perfP = document.getElementById( 'performance' );
-			perfP.textContent += ` Rendering rivers took ${( tEndRender - tStartRender )} milliseconds.`;
-		});
+		.catch(err => console.error(err));
 
 	return canvas;
 }
