@@ -5,6 +5,8 @@
     <meta charset="utf-8">
 </head>
 <body>
+<!--TODO selectors dynamically from config...-->
+<span>Resolution selector:</span>
 <form id="resolutionSelector">
     <label>1920x1080
         <input type="radio" name="resolution" value="0" checked/>
@@ -14,6 +16,21 @@
     </label>
     <label>7680x4320
     <input type="radio" name="resolution" value="2"/>
+    </label>
+</form>
+<span>Layer selector:</span>
+<form id="layerSelector">
+    <label>items
+        <input type="checkbox" name="layer-items" value="1" checked/>
+    </label>
+    <label>twinned administrative body
+        <input type="checkbox" name="layer-P190" value="1"/>
+    </label>
+    <label>adjacent station
+        <input type="checkbox" name="layer-P197" value="1"/>
+    </label>
+    <label>mouth of the watercourse
+        <input type="checkbox" name="layer-P403" value="1"/>
     </label>
 </form>
 <!--This is needed when we are using the build step again: <script src="main.js"></script>-->

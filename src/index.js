@@ -9,26 +9,33 @@ function getResolutionKey(mapConfig) {
 	return `${mapConfig.x}x${mapConfig.y}`;
 }
 
-function showDensity(mapConfig, layerConfig) {
+function showDensity(mapConfig, layerConfig, layerStates) {
 	let resolutionKey = getResolutionKey(mapConfig)
 
+	console.log(layerStates)
+
+	// Render any missing resolutions
 	if (!wdMapCanvases[resolutionKey]) {
-		wdMapCanvases[resolutionKey]=[]
-		createAndRenderCanvases(resolutionKey, mapConfig, layerConfig).forEach(function(canvas){
-			document.querySelector('#canvas-container').appendChild(canvas);
-			wdMapCanvases[resolutionKey].push(canvas)
-		})
+		wdMapCanvases[resolutionKey] = createAndRenderCanvases(resolutionKey, mapConfig, layerConfig);
+		// Add them to the DOM
+		Object.keys(wdMapCanvases[resolutionKey]).forEach(function(key) {
+			document.querySelector('#canvas-container').appendChild(wdMapCanvases[resolutionKey][key]);
+		});
 	}
 
+	// Hide all layers
 	for (const resolution in wdMapCanvases) {
-		wdMapCanvases[resolution].forEach(function(canvas){
-			canvas.style.display = 'none';
-		})
+		Object.keys(wdMapCanvases[resolutionKey]).forEach(function(key) {
+			wdMapCanvases[resolutionKey][key].style.display = 'none';
+		});
 	}
 
-	wdMapCanvases[resolutionKey].forEach(function(canvas){
-		canvas.style.display = 'block';
-	})
+	// Show the requested layers
+	Object.keys(layerStates).forEach(function(key) {
+		if(layerStates[key] === true) {
+			wdMapCanvases[resolutionKey][key].style.display = 'block';
+		}
+	});
 
 }
 
@@ -50,13 +57,11 @@ function newCanvas(x, y, fillStyle){
 function createAndRenderCanvases(resolutionKeyToRender, mapConfig, layerConfig) {
 	let resolutionKey = getResolutionKey(mapConfig)
 
-	const allCanvases = [];
-	const mainCanvas = newCanvas(mapConfig.x, mapConfig.y, 'black');
-	allCanvases.push(mainCanvas);
-	const layerCanvases = {};
+	const allCanvases = {
+		items: newCanvas(mapConfig.x, mapConfig.y, 'black'),
+	};
 	layerConfig.forEach( function(layer){
-		layerCanvases[layer.id] = newCanvas(mapConfig.x, mapConfig.y, 'clear');
-		allCanvases.push(layerCanvases[layer.id]);
+		allCanvases[layer.id] = newCanvas(mapConfig.x, mapConfig.y, 'clear');
 	})
 
 	worker.onmessage = function(e) {
@@ -68,12 +73,12 @@ function createAndRenderCanvases(resolutionKeyToRender, mapConfig, layerConfig) 
 			batchData.batchedValues.forEach( function(drawValue){
 				if(batchData.drawData.drawType === 'dot') {
 					drawDot(
-						mainCanvas.getContext("2d"),
+						allCanvases.items.getContext("2d"),
 						drawValue
 					)
 				} else {
 					drawLine(
-						layerCanvases[batchData.drawData.drawType].getContext("2d"),
+						allCanvases[batchData.drawData.drawType].getContext("2d"),
 						drawValue,
 						batchData.drawData.lineMaxPercent,
 						batchData.drawData.strokeStyle,
@@ -87,12 +92,24 @@ function createAndRenderCanvases(resolutionKeyToRender, mapConfig, layerConfig) 
 	return allCanvases;
 }
 
-const form = document.getElementById('resolutionSelector');
-
 function updateCanvas() {
-	const index = form.querySelector('input[name="resolution"]:checked').value;
-	showDensity(config.maps[index], config.layers);
+	const resolutionIndex = resolutionForm.querySelector('input[name="resolution"]:checked').value;
+
+	// TODO generate this dynamically?
+	const layerStates = {
+		items: layerForm.querySelector('input[name="layer-items"]').checked,
+		P190: layerForm.querySelector('input[name="layer-P190"]').checked,
+		P197: layerForm.querySelector('input[name="layer-P197"]').checked,
+		P403: layerForm.querySelector('input[name="layer-P403"]').checked,
+	};
+
+	showDensity(config.maps[resolutionIndex], config.layers, layerStates);
 }
 
+const resolutionForm = document.getElementById('resolutionSelector');
+resolutionForm.addEventListener('change', updateCanvas);
+
+const layerForm = document.getElementById('layerSelector');
+layerForm.addEventListener('change', updateCanvas);
+
 updateCanvas();
-form.addEventListener('change', updateCanvas);
