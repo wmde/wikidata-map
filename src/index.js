@@ -1,13 +1,8 @@
 import config from './config.js';
 import { drawDot, drawLine } from './draw.js';
-import {
-	chunksToLinesReadableStream,
-	csvLinesToPartsReadableStream,
-	valuesToBatchedValuesReadableStream,
-	batchedToDrawingReadableStream
-} from './streams.js';
 
 const wdMapCanvases = {};
+let worker = new Worker('./../src/worker.js');
 
 function showDensity(x, y, url, riverUrl) {
 	const resolutionKey = `${x}x${y}`;
@@ -39,24 +34,21 @@ function createAndRenderDensityCanvas(x, y, url, riverUrl) {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	document.querySelector('body').appendChild(canvas);
 
-	fetch(url, { mode: "cors" })
-		.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
-		.then(lineStream => {return csvLinesToPartsReadableStream( lineStream.getReader() )})
-		.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 1000 )})
-		.then(batchedStream => {return batchedToDrawingReadableStream( batchedStream.getReader(), drawDot, ctx )})
-		.then(() => {
-			// Rivers must run after the main render as they currently use the same canvas and must be on top
-			if(riverUrl) {
-				return fetch(riverUrl, { mode: "cors" })
-					.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
-					.then(lineStream => {return csvLinesToPartsReadableStream( lineStream.getReader() )})
-					.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 100 )})
-					.then(batchedStream => {return batchedToDrawingReadableStream( batchedStream.getReader(), drawLine, ctx )})
-					.catch(err => console.error(err));
-			}
-		})
-		.catch(err => console.error(err));
+	worker.onmessage = function(e) {
+		const [drawType, batchedValues] = e.data;
+		window.requestAnimationFrame( function() {
+			batchedValues.forEach( function(drawData){
+				if(drawType === 'dot') {
+					drawDot(ctx, drawData)
+				}
+				if(drawType === 'line') {
+					drawLine(ctx, drawData)
 
+				}
+			} )
+		} )
+	}
+	worker.postMessage([url, riverUrl])
 	return canvas;
 }
 
