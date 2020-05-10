@@ -91,7 +91,7 @@ FROM wmf.wikidata_entity
 LATERAL VIEW explode(claims) t AS claim
 WHERE snapshot='2020-03-02'
     AND typ = 'item'
-    AND claim.mainsnak.property IN ( 'P403' ) 
+    AND claim.mainsnak.property IN ( 'P190', 'P197', 'P403' )
     AND claim.mainsnak.typ = 'value';
 ```
 
@@ -104,6 +104,7 @@ Then figure out how the relations relate to our pixel map:
 DROP TABLE IF EXISTS addshore.wikidata_map_item_relation_pixels;
 
 CREATE EXTERNAL TABLE addshore.wikidata_map_item_relation_pixels (
+    `forId` string,
     `posx1` int,
     `posy1` int,
     `posx2` int,
@@ -115,18 +116,19 @@ STORED AS TEXTFILE;
 
 INSERT INTO addshore.wikidata_map_item_relation_pixels
 SELECT
+    x.forId as forId,
     a.posx as posx1,
     a.posy as posy1,
     b.posx as posx2,
     b.posy as poxy2
 FROM (
-    SELECT fromId, toId
+    SELECT fromId, toId, forId
     FROM addshore.wikidata_map_item_relations
-    WHERE forId = 'P403'
 ) x
 JOIN addshore.wikidata_map_item_pixels a ON (a.id = x.fromId)
 JOIN addshore.wikidata_map_item_pixels b ON (b.id = x.toId)
 GROUP BY
+    x.forId,
     a.posx,
     a.posy,
     b.posx,
@@ -138,7 +140,9 @@ LIMIT 100000000;
 
 ```
 hive -e "SELECT posx, posy, COUNT(*) as count FROM addshore.wikidata_map_item_pixels GROUP BY posx, posy ORDER BY count ASC LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-03-02-7680-4320-pixels.csv 
-hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-03-02-7680-4320-relation-pixels-P403.csv 
+hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE forId = 'P190' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-03-02-7680-4320-relation-pixels-P190.csv 
+hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE forId = 'P197' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-03-02-7680-4320-relation-pixels-P197.csv 
+hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE forId = 'P403' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-03-02-7680-4320-relation-pixels-P403.csv 
 ```
 
 **Publish the CSVs**
@@ -147,6 +151,8 @@ This can take a little while to show up...
 
 ```
 cp map-2020-03-02-7680-4320-pixels.csv /srv/published/datasets/one-off/wikidata/addshore/map-2020-03-02-7680-4320-pixels.csv
+cp map-2020-03-02-7680-4320-relation-pixels-P190.csv  /srv/published/datasets/one-off/wikidata/addshore/map-2020-03-02-7680-4320-relation-pixels-P190.csv 
+cp map-2020-03-02-7680-4320-relation-pixels-P197.csv  /srv/published/datasets/one-off/wikidata/addshore/map-2020-03-02-7680-4320-relation-pixels-P197.csv 
 cp map-2020-03-02-7680-4320-relation-pixels-P403.csv  /srv/published/datasets/one-off/wikidata/addshore/map-2020-03-02-7680-4320-relation-pixels-P403.csv 
 published-sync
 ```
