@@ -1,4 +1,4 @@
-export function chunksToLinesReadableStream( reader ) {
+let chunksToLinesReadableStream = function( reader ) {
 	const decoder = new TextDecoder();
 	return new ReadableStream({
 		start(controller) {
@@ -22,7 +22,7 @@ export function chunksToLinesReadableStream( reader ) {
 	})
 }
 
-export function csvLinesToPartsReadableStream( reader ) {
+let csvLinesToPartsReadableStream = function( reader ) {
 	return new ReadableStream({
 		start(controller) {
 			return pump();
@@ -40,7 +40,7 @@ export function csvLinesToPartsReadableStream( reader ) {
 	})
 }
 
-export function valuesToBatchedValuesReadableStream( reader, batchSize ) {
+let valuesToBatchedValuesReadableStream = function( reader, batchSize ) {
 	let soFar = [];
 	return new ReadableStream({
 		start(controller) {
@@ -63,7 +63,7 @@ export function valuesToBatchedValuesReadableStream( reader, batchSize ) {
 	})
 }
 
-export function batchedToDrawingReadableStream( reader, drawMethod, ctx ) {
+let batchedToWorkerMessageReadableStream = function( reader, drawType, postMessage ) {
 	return new ReadableStream({
 		start(controller) {
 			return pump();
@@ -73,13 +73,7 @@ export function batchedToDrawingReadableStream( reader, drawMethod, ctx ) {
 						controller.close();
 						return;
 					}
-					console.log('req')
-					window.requestAnimationFrame( function() {
-						console.log('do')
-						value.forEach( function(value){
-							drawMethod(ctx, value)
-						} )
-					} )
+					postMessage([drawType, value]);
 					return pump();
 				});
 			}
