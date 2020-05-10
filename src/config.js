@@ -10,7 +10,7 @@ const config = {
 			x: 3840,
 			y: 2160,
 			url: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-20200424-3840-2160-pixels.csv',
-			layerUrl: null,
+			layerUrl: '',
 		},
 		{
 			x: 7680,
