@@ -5,6 +5,28 @@ let worker = new Worker('./../src/worker.js');
 
 const wdMapCanvases = {};
 
+worker.onmessage = function(e) {
+	let batchData = e.data;
+	let canvasesForBatch = wdMapCanvases[batchData.drawData.resolutionKey]
+	window.requestAnimationFrame( function() {
+		batchData.batchedValues.forEach( function(drawValue){
+			if(batchData.drawData.drawType === 'dot') {
+				drawDot(
+					canvasesForBatch.items.getContext("2d"),
+					drawValue
+				)
+			} else {
+				drawLine(
+					canvasesForBatch[batchData.drawData.drawType].getContext("2d"),
+					drawValue,
+					batchData.drawData.lineMaxPercent,
+					batchData.drawData.strokeStyle,
+				)
+			}
+		} )
+	} )
+}
+
 function getResolutionKey(mapConfig) {
 	return `${mapConfig.x}x${mapConfig.y}`;
 }
@@ -12,23 +34,22 @@ function getResolutionKey(mapConfig) {
 function showDensity(mapConfig, layerConfig, layerStates) {
 	let resolutionKey = getResolutionKey(mapConfig)
 
-	console.log(layerStates)
-
-	// Render any missing resolutions
+	// Add any missing canvases & trigger render
 	if (!wdMapCanvases[resolutionKey]) {
-		wdMapCanvases[resolutionKey] = createAndRenderCanvases(resolutionKey, mapConfig, layerConfig);
-		// Add them to the DOM
+		wdMapCanvases[resolutionKey] = createCanvases(resolutionKey, mapConfig, layerConfig);
 		Object.keys(wdMapCanvases[resolutionKey]).forEach(function(key) {
 			document.querySelector('#canvas-container').appendChild(wdMapCanvases[resolutionKey][key]);
 		});
+		// Start the render
+		worker.postMessage([resolutionKey, mapConfig, layerConfig])
 	}
 
 	// Hide all layers
-	for (const resolution in wdMapCanvases) {
-		Object.keys(wdMapCanvases[resolutionKey]).forEach(function(key) {
-			wdMapCanvases[resolutionKey][key].style.display = 'none';
+	Object.keys(wdMapCanvases).forEach(function(resolutionKey) {
+		Object.keys(wdMapCanvases[resolutionKey]).forEach(function(layerKey) {
+			wdMapCanvases[resolutionKey][layerKey].style.display = 'none';
 		});
-	}
+	});
 
 	// Show the requested layers
 	Object.keys(layerStates).forEach(function(key) {
@@ -54,7 +75,7 @@ function newCanvas(x, y, fillStyle){
 	return canvas
 }
 
-function createAndRenderCanvases(resolutionKeyToRender, mapConfig, layerConfig) {
+function createCanvases(resolutionKeyToRender, mapConfig, layerConfig) {
 	let resolutionKey = getResolutionKey(mapConfig)
 
 	const allCanvases = {
@@ -63,32 +84,6 @@ function createAndRenderCanvases(resolutionKeyToRender, mapConfig, layerConfig) 
 	layerConfig.forEach( function(layer){
 		allCanvases[layer.id] = newCanvas(mapConfig.x, mapConfig.y, 'clear');
 	})
-
-	worker.onmessage = function(e) {
-		let batchData = e.data;
-		if(resolutionKey !== batchData.drawData.resolutionKey) {
-			return;
-		}
-		window.requestAnimationFrame( function() {
-			batchData.batchedValues.forEach( function(drawValue){
-				if(batchData.drawData.drawType === 'dot') {
-					drawDot(
-						allCanvases.items.getContext("2d"),
-						drawValue
-					)
-				} else {
-					drawLine(
-						allCanvases[batchData.drawData.drawType].getContext("2d"),
-						drawValue,
-						batchData.drawData.lineMaxPercent,
-						batchData.drawData.strokeStyle,
-					)
-				}
-			} )
-		} )
-	}
-	worker.postMessage([resolutionKey, mapConfig, layerConfig])
-
 	return allCanvases;
 }
 
