@@ -11,7 +11,7 @@ export function drawLine( ctx, values ) {
 	if ( distance > ctx.canvas.width/3 ) {
 		return;
 	}
-	ctx.strokeStyle = `blue`;
+	ctx.strokeStyle = "rgba(0, 0, 255, 0.20)";
 	ctx.beginPath();
 	ctx.moveTo( x1, y1 );
 	ctx.lineTo( x2, y2 );
