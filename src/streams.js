@@ -63,7 +63,7 @@ let valuesToBatchedValuesReadableStream = function( reader, batchSize ) {
 	})
 }
 
-let batchedToWorkerMessageReadableStream = function( reader, postMessage, resolutionKey, drawType ) {
+let batchedToWorkerMessageReadableStream = function( reader, postMessage, drawData ) {
 	return new ReadableStream({
 		start(controller) {
 			return pump();
@@ -73,7 +73,10 @@ let batchedToWorkerMessageReadableStream = function( reader, postMessage, resolu
 						controller.close();
 						return;
 					}
-					postMessage([resolutionKey, drawType, value]);
+					postMessage({
+						drawData: drawData,
+						batchedValues: value,
+					});
 					return pump();
 				});
 			}

@@ -4,14 +4,16 @@ export function drawDot( ctx, values ) {
 	ctx.fillRect( x, y, 1, 1 );
 }
 
-export function drawLine( ctx, values ) {
+export function drawLine( ctx, values, lineMaxPercent, strokeStyle ) {
 	const [ x1, y1, x2, y2 ] = values;
 	const distance = Math.sqrt( Math.pow( x2 - x1, 2 ) + Math.pow( y2 - y1, 2 ) );
-	// Try to avoid drawing lines between points that should go off the edge of the screen
-	if ( distance > ctx.canvas.width/3 ) {
+
+	//Try to avoid drawing lines between points that should go off the edge of the screen
+	if ( distance > ctx.canvas.width / 100 * lineMaxPercent ) {
 		return;
 	}
-	ctx.strokeStyle = "rgba(0, 0, 255, 0.20)";
+
+	ctx.strokeStyle = strokeStyle;
 	ctx.beginPath();
 	ctx.moveTo( x1, y1 );
 	ctx.lineTo( x2, y2 );

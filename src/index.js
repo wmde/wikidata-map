@@ -5,22 +5,30 @@ let worker = new Worker('./../src/worker.js');
 
 const wdMapCanvases = {};
 
-function showDensity(x, y, url, riverUrl) {
-	const resolutionKey = `${x}x${y}`;
+function getResolutionKey(mapConfig) {
+	return `${mapConfig.x}x${mapConfig.y}`;
+}
+
+function showDensity(mapConfig, layerConfig) {
+	let resolutionKey = getResolutionKey(mapConfig)
+
 	if (!wdMapCanvases[resolutionKey]) {
-		wdMapCanvases[resolutionKey] = createAndRenderCanvases(resolutionKey, x, y, url, riverUrl)
-		document.querySelector('#canvas-container').appendChild(wdMapCanvases[resolutionKey][0]);
-		document.querySelector('#canvas-container').appendChild(wdMapCanvases[resolutionKey][1]);
+		wdMapCanvases[resolutionKey]=[]
+		createAndRenderCanvases(resolutionKey, mapConfig, layerConfig).forEach(function(canvas){
+			document.querySelector('#canvas-container').appendChild(canvas);
+			wdMapCanvases[resolutionKey].push(canvas)
+		})
 	}
 
 	for (const resolution in wdMapCanvases) {
-		const canvases = wdMapCanvases[resolution];
-		canvases[0].style.display = 'none';
-		canvases[1].style.display = 'none';
+		wdMapCanvases[resolution].forEach(function(canvas){
+			canvas.style.display = 'none';
+		})
 	}
 
-	wdMapCanvases[resolutionKey][0].style.display = 'block';
-	wdMapCanvases[resolutionKey][1].style.display = 'block';
+	wdMapCanvases[resolutionKey].forEach(function(canvas){
+		canvas.style.display = 'block';
+	})
 
 }
 
@@ -39,34 +47,51 @@ function newCanvas(x, y, fillStyle){
 	return canvas
 }
 
-function createAndRenderCanvases(resolutionKeyToRender, x, y, url, riverUrl) {
-	const mainCanvas = newCanvas(x, y, 'black');
-	const riverCanvas = newCanvas(x, y, 'clear');
+function createAndRenderCanvases(resolutionKeyToRender, mapConfig, layerConfig) {
+	let resolutionKey = getResolutionKey(mapConfig)
+
+	const allCanvases = [];
+	const mainCanvas = newCanvas(mapConfig.x, mapConfig.y, 'black');
+	allCanvases.push(mainCanvas);
+	const layerCanvases = {};
+	layerConfig.forEach( function(layer){
+		layerCanvases[layer.id] = newCanvas(mapConfig.x, mapConfig.y, 'clear');
+		allCanvases.push(layerCanvases[layer.id]);
+	})
+
 	worker.onmessage = function(e) {
-		const [resolutionKey, drawType, batchedValues] = e.data;
-		if(resolutionKeyToRender !== resolutionKey) {
+		let batchData = e.data;
+		if(resolutionKey !== batchData.drawData.resolutionKey) {
 			return;
 		}
 		window.requestAnimationFrame( function() {
-			batchedValues.forEach( function(drawData){
-				if(drawType === 'dot') {
-					drawDot(mainCanvas.getContext("2d"), drawData)
-				}
-				if(drawType === 'line') {
-					drawLine(riverCanvas.getContext("2d"), drawData)
+			batchData.batchedValues.forEach( function(drawValue){
+				if(batchData.drawData.drawType === 'dot') {
+					drawDot(
+						mainCanvas.getContext("2d"),
+						drawValue
+					)
+				} else {
+					drawLine(
+						layerCanvases[batchData.drawData.drawType].getContext("2d"),
+						drawValue,
+						batchData.drawData.lineMaxPercent,
+						batchData.drawData.strokeStyle,
+					)
 				}
 			} )
 		} )
 	}
-	worker.postMessage([resolutionKeyToRender, url, riverUrl])
-	return [mainCanvas, riverCanvas];
+	worker.postMessage([resolutionKey, mapConfig, layerConfig])
+
+	return allCanvases;
 }
 
 const form = document.getElementById('resolutionSelector');
 
 function updateCanvas() {
 	const index = form.querySelector('input[name="resolution"]:checked').value;
-	showDensity(config[index].x, config[index].y, config[index].url, config[index].riverUrl);
+	showDensity(config.maps[index], config.layers);
 }
 
 updateCanvas();
