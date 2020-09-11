@@ -2,8 +2,8 @@ self.importScripts(
 	'streams.js'
 );
 
-self.startFetch = function( resolutionKey, mapConfig, layerConfig ) {
-	fetch(mapConfig.url, { mode: "cors" })
+self.startFetch = async function( resolutionKey, mapConfig, layerConfig ) {
+	await fetch(mapConfig.url, { mode: "cors" })
 		.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
 		.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 5000 )})
 		.then(batchedStream => {return batchedToWorkerMessageReadableStream( batchedStream.getReader(), postMessage, {
