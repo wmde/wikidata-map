@@ -5,7 +5,6 @@ self.importScripts(
 self.startFetch = function( resolutionKey, mapConfig, layerConfig ) {
 	fetch(mapConfig.url, { mode: "cors" })
 		.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
-		.then(lineStream => {return csvLinesToPartsReadableStream( lineStream.getReader() )})
 		.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 5000 )})
 		.then(batchedStream => {return batchedToWorkerMessageReadableStream( batchedStream.getReader(), postMessage, {
 			resolutionKey: resolutionKey,
@@ -18,7 +17,6 @@ self.startFetch = function( resolutionKey, mapConfig, layerConfig ) {
 		let layerUrl = mapConfig.layerUrl.replace('{property}', propertyId);
 		fetch(layerUrl, { mode: "cors" })
 			.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
-			.then(lineStream => {return csvLinesToPartsReadableStream( lineStream.getReader() )})
 			.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 5000 )})
 			.then(batchedStream => {return batchedToWorkerMessageReadableStream( batchedStream.getReader(), postMessage, {
 				resolutionKey: resolutionKey,
