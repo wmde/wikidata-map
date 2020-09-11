@@ -15,8 +15,8 @@ const config = {
 		{
 			x: 7680,
 			y: 4320,
-			url: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-2020-03-02-7680-4320-pixels.csv',
-			layerUrl: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-2020-03-02-7680-4320-relation-pixels-{property}.csv',
+			url: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-2020-08-24-7680-4320-pixels.csv',
+			layerUrl: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-2020-08-24-7680-4320-relation-pixels-{property}.csv',
 		}
 	],
 	layers: [
