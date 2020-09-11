@@ -47,14 +47,16 @@ let valuesToBatchedValuesReadableStream = function( reader, batchSize ) {
 			return pump();
 			function pump() {
 				return reader.read().then(({ done, value }) => {
+					if (value) {
+						soFar.push( value )
+					}
+					if((done && soFar.length) || soFar.length >= batchSize) {
+						controller.enqueue(soFar.slice());
+						soFar = []
+					}
 					if (done) {
 						controller.close();
 						return;
-					}
-					soFar.push(value)
-					if(soFar.length >= batchSize) {
-						controller.enqueue(soFar.slice());
-						soFar = []
 					}
 					return pump();
 				});
@@ -69,14 +71,16 @@ let batchedToWorkerMessageReadableStream = function( reader, postMessage, drawDa
 			return pump();
 			function pump() {
 				return reader.read().then(({ done, value }) => {
+					if (value) {
+						postMessage( {
+							drawData: drawData,
+							batchedValues: value,
+						} );
+					}
 					if (done) {
 						controller.close();
 						return;
 					}
-					postMessage({
-						drawData: drawData,
-						batchedValues: value,
-					});
 					return pump();
 				});
 			}
