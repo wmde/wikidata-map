@@ -4,35 +4,15 @@ let chunksToLinesReadableStream = function( reader ) {
 		start(controller) {
 			return pump();
 			function pump() {
-				let soFar = null;
 				return reader.read().then(({ done, value }) => {
 					if (done) {
 						controller.close();
 						return;
 					}
-					const lines = ((soFar != null ? soFar: "") + decoder.decode(value, {stream: true})).split(/\r?\n/);
-					soFar = lines.pop();
+					const lines = decoder.decode(value, {stream: true}).split(/\r?\n/);
 					for (let line of lines) {
-						controller.enqueue(line);
+						controller.enqueue(line.split( ',' ));
 					}
-					return pump();
-				});
-			}
-		}
-	})
-}
-
-let csvLinesToPartsReadableStream = function( reader ) {
-	return new ReadableStream({
-		start(controller) {
-			return pump();
-			function pump() {
-				return reader.read().then(({ done, value }) => {
-					if (done) {
-						controller.close();
-						return;
-					}
-					controller.enqueue(value.split( ',' ));
 					return pump();
 				});
 			}

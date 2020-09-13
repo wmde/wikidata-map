@@ -1,16 +1,8 @@
 {
   "name": "wikidata-map",
   "version": "1.0.0",
-  "description": "frontend to render density of wikidata items on a map",
-  "main": "index.js",
+  "description": "frontend to render density of Wikidata items on a map",
   "repository": "git@github.com:wmde/wikidata-map.git",
-  "author": "Michael Große <mic.grosse@googlemail.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
-  },
-  "scripts": {
-    "build": "webpack"
-  }
+  "author": "addshore <addshorewiki@gmail.com",
+  "license": "MIT"
 }

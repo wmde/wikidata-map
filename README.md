@@ -8,12 +8,5 @@ https://wmde.github.io/wikidata-map/dist/index.html
 
 ## Development
 
-Installing the development dependencies:
-```shell script
-$ yarn install
-```
-
-Building the production bundle:
-```shell script
-$ yarn build
-```
+Just start editing the js files directly.
+There is no build step and there are no dependencies.
