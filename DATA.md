@@ -8,7 +8,7 @@ Queries in this file were origionally written and run on 9 May 2020 by Addshore.
 
 These tables only need to be created once...
 
-```
+```sql
 CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_coordinates (
     `id` string                            COMMENT 'The id of the entity, Q32753077 for instance',
     `globe` string,
@@ -63,25 +63,35 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 
 - Log into `stat1007.eqiad.wmnet`
 - Do `kinit` to auth yourself
-- Open up a `hive` shell by running the `hive` command.
+- Open up a spark shell
 
-### Selecting snapshot
-
+```sh
+spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64
 ```
+
+You can read more about the WMF spark setup [here](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Cluster/Spark).
+
+### Selecting snapshot & poking settings
+
+```sql
 SHOW PARTITIONS wmf.wikidata_entity;
 ```
 
 And set the `WIKIDATA_MAP_SNAPSHOT` variable to the snapshot you wish to generate data for.
 
-```
+```sql
 SET hivevar:WIKIDATA_MAP_SNAPSHOT='2021-10-18';
+```
+
+You also need to set this:
+
+```sql
+SET hive.exec.dynamic.partition.mode=nonstrict;
 ```
 
 ### Extracting initial data
 
-```
-SET hive.exec.dynamic.partition.mode=nonstrict;
-
+```sql
 INSERT INTO addshore.wikidata_map_item_coordinates
 PARTITION(snapshot)
 SELECT
@@ -95,7 +105,7 @@ LATERAL VIEW explode(claims) t AS claim
 WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
     AND typ = 'item'
     AND claim.mainsnak.property = 'P625'
-    AND claim.mainsnak.typ = 'value';
+    AND claim.mainsnak.typ = 'value'; LIMIT 10;
 ```
 
 ### Calculate pixel locations
@@ -111,7 +121,7 @@ In order to get to a similar quality we will x4 the target size, to 7680 x 4320.
  - TODO add ids to the pixel entries, so they can be displayed on the map..
  - TODO the below query is for earth only...
 
-```
+```sql
 INSERT INTO addshore.wikidata_map_item_pixels
 PARTITION(snapshot)
 SELECT
@@ -132,27 +142,27 @@ Currently this is done for:
 - [P197 (adjacent station)](https://www.wikidata.org/wiki/Property:P197)
 - [P403 (mouth of watercourse)](https://www.wikidata.org/wiki/Property:P403)
 
-```
+```sql
 INSERT INTO addshore.wikidata_map_item_relations
 PARTITION(snapshot)
 SELECT
     id AS fromId,
-    get_json_object(claim.mainsnak.datavalue.value, '$.id') as toId,
-    claim.mainsnak.property as forId,
+    get_json_object(claim.mainSnak.dataValue.value, '$.id') as toId,
+    claim.mainSnak.property as forId,
     snapshot
 FROM wmf.wikidata_entity
 LATERAL VIEW explode(claims) t AS claim
 WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
     AND typ = 'item'
-    AND claim.mainsnak.property IN ( 'P190', 'P197', 'P403' )
-    AND claim.mainsnak.typ = 'value';
+    AND claim.mainSnak.property IN ( 'P190', 'P197', 'P403' )
+    AND claim.mainSnak.typ = 'value';
 ```
 
 ### Calculate item relation pixel locations
 
 Then figure out how the relations relate to our pixel map:
 
-```
+```sql
 INSERT INTO addshore.wikidata_map_item_relation_pixels
 PARTITION(snapshot)
 SELECT
@@ -180,9 +190,20 @@ GROUP BY
 LIMIT 100000000;
 ```
 
+## Check the ammount of data;
+
+You should have rows for the correct snapshot in all of the tables...
+
+```sql
+SELECT COUNT(*) FROM addshore.wikidata_map_item_coordinates WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
+SELECT COUNT(*) FROM addshore.wikidata_map_item_pixels WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
+SELECT COUNT(*) FROM addshore.wikidata_map_item_relations WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
+SELECT COUNT(*) FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
+```
+
 ## Generate the CSVs
 
-Exit hive and do the rest!
+Exit spark and do the rest!
 
 Set an environment variable with the snapshot date:
 
@@ -190,18 +211,31 @@ Set an environment variable with the snapshot date:
 WIKIDATA_MAP_SNAPSHOT='2021-10-18'
 ```
 
-TODO update the snapshot dates!
+And write the files...
+
+- `tail -n +2` removes the firt line of output, which will be `PYSPARK_PYTHON=python3.7`
+- `sed 's/[\t]/,/g'` turns the TSV into a CSV
 
 ```sh
-hive -e "SELECT posx, posy, COUNT(*) as count FROM addshore.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
-hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P190' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv
-hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P197' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv
-hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P403' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv
+spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx, posy, COUNT(*) as count FROM addshore.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
+spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P190' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv
+spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P197' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv
+spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P403' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv
 ```
 
 You should find the new files on disk in your current working directory.
+You can check how many lines they have.
+
+```sh
+cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv | wc -l
+cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv | wc -l
+cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv | wc -l
+cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv | wc -l
+```
 
 ## Publishing data
+
+If everything went well, you are ready to publish the data.
 
 ### Publishing the CSVs
 
