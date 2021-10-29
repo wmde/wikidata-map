@@ -1,13 +1,15 @@
-Data is generated from a Wikidata JSON dump loaded into Hadoop.
+# Data
 
-Queries in this file were written and run on 9 May 2020 by Addshore...
+Data is generated from a Wikidata JSON dump loaded into Hadoop on the Wikimedia Foundation Analaytics cluster.
 
-## Table Creation
+Queries in this file were origionally written and run on 9 May 2020 by Addshore...
+
+## Setting up data infrastruture
 
 These tables only need to be created once...
 
 ```
-CREATE TABLE addshore.wikidata_map_item_coordinates (
+CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_coordinates (
     `id` string                            COMMENT 'The id of the entity, Q32753077 for instance',
     `globe` string,
     `longitude` string,
@@ -19,7 +21,7 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 
-CREATE TABLE addshore.wikidata_map_item_pixels (
+CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_pixels (
     `id` string,
     `posx` int,
     `posy` int
@@ -30,7 +32,7 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 
-CREATE TABLE addshore.wikidata_map_item_relations (
+CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_relations (
     `fromId` string,
     `toId` string,
     `forId` string
@@ -41,7 +43,7 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 
-CREATE TABLE addshore.wikidata_map_item_relation_pixels (
+CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_relation_pixels (
     `forId` string,
     `posx1` int,
     `posy1` int,
@@ -55,25 +57,27 @@ STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFo
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 ```
 
-## Table Population
+## Generating data
 
-**Setup**
+### Setup
 
-- Log into stat1007
+- Log into `stat1007.eqiad.wmnet`
 - Do `kinit` to auth yourself
 - Open up a `hive` shell by running the `hive` command.
 
-**Find out what Wikidata dumps exist in hadoop:**
+### Selecting snapshot
 
-`SHOW PARTITIONS wmf.wikidata_entity'`
+```
+SHOW PARTITIONS wmf.wikidata_entity;
+```
 
-And set a variable for use in our queries...
+And set the `WIKIDATA_MAP_SNAPSHOT` variable to the snapshot you wish to generate data for.
 
-`SET hivevar:WIKIDATA_MAP_SNAPSHOT='2020-08-24';`
+```
+SET hivevar:WIKIDATA_MAP_SNAPSHOT='2021-10-18';
+```
 
-**Extract the item coordinates from the dump into our own table:**
-
-Update the `snapshot` in the query below with the dump you want to generate data from, such as `2020-08-24`.
+### Extracting initial data
 
 ```
 SET hive.exec.dynamic.partition.mode=nonstrict;
@@ -94,7 +98,7 @@ WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
     AND claim.mainsnak.typ = 'value';
 ```
 
-**Figure out item pixel locations**
+### Calculate pixel locations
 
 From here was want to calculate pixel locations for a canvas, to avoid doing any computation on the client.
 
@@ -120,14 +124,14 @@ WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
     AND globe = "http://www.wikidata.org/entity/Q2";
 ```
 
-**Figure out item relations**
+### Calculate item relations
 
 Currently this is done for:
- - P190 (twinned administrative body)
- - P197 (adjacent station)
- - P403 (mouth of watercourse)
 
-Figure out the items with relations:
+- [P190 (twinned administrative body)](https://www.wikidata.org/wiki/Property:P190)
+- [P197 (adjacent station)](https://www.wikidata.org/wiki/Property:P197)
+- [P403 (mouth of watercourse)](https://www.wikidata.org/wiki/Property:P403)
+
 ```
 INSERT INTO addshore.wikidata_map_item_relations
 PARTITION(snapshot)
@@ -144,9 +148,10 @@ WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
     AND claim.mainsnak.typ = 'value';
 ```
 
-**Figure out item relation pixel locations**
+### Calculate item relation pixel locations
 
 Then figure out how the relations relate to our pixel map:
+
 ```
 INSERT INTO addshore.wikidata_map_item_relation_pixels
 PARTITION(snapshot)
@@ -175,29 +180,47 @@ GROUP BY
 LIMIT 100000000;
 ```
 
-**Generate the CSVs**
+## Generate the CSVs
+
+Exit hive and do the rest!
+
+Set an environment variable with the snapshot date:
+
+```sh
+WIKIDATA_MAP_SNAPSHOT='2021-10-18'
+```
 
 TODO update the snapshot dates!
 
+```sh
+hive -e "SELECT posx, posy, COUNT(*) as count FROM addshore.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
+hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P190' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv
+hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P197' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv
+hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P403' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv
 ```
-hive -e "SELECT posx, posy, COUNT(*) as count FROM addshore.wikidata_map_item_pixels WHERE snapshot = '2020-08-24' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-08-24-7680-4320-pixels.csv
-hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '2020-08-24' AND forId = 'P190' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-08-24-7680-4320-relation-pixels-P190.csv
-hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '2020-08-24' AND forId = 'P197' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-08-24-7680-4320-relation-pixels-P197.csv
-hive -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '2020-08-24' AND forId = 'P403' LIMIT 100000000" | sed 's/[\t]/,/g'  > map-2020-08-24-7680-4320-relation-pixels-P403.csv
+
+You should find the new files on disk in your current working directory.
+
+## Publishing data
+
+### Publishing the CSVs
+
+Set an environment variable with the snapshot date:
+
+```sh
+WIKIDATA_MAP_SNAPSHOT='2021-10-18'
 ```
 
-**Publish the CSVs**
-
-TODO udpate the snapshot dates!
-
-This can take a little while to show up...
+And move them into the published directory
 
 ```
-cp map-2020-08-24-7680-4320-pixels.csv /srv/published/datasets/one-off/wikidata/addshore/map-2020-08-24-7680-4320-pixels.csv
-cp map-2020-08-24-7680-4320-relation-pixels-P190.csv /srv/published/datasets/one-off/wikidata/addshore/map-2020-08-24-7680-4320-relation-pixels-P190.csv 
-cp map-2020-08-24-7680-4320-relation-pixels-P197.csv /srv/published/datasets/one-off/wikidata/addshore/map-2020-08-24-7680-4320-relation-pixels-P197.csv 
-cp map-2020-08-24-7680-4320-relation-pixels-P403.csv /srv/published/datasets/one-off/wikidata/addshore/map-2020-08-24-7680-4320-relation-pixels-P403.csv 
+cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
+cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv 
+cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv 
+cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv 
 published-sync
 ```
+
+This can take a little while to show up...
 
 Make sure the file appears: https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/
