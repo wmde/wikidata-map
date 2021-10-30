@@ -1,5 +1,6 @@
 dist/
 !dist/index.html
+!dist/css.css
 
 node_modules/
 .idea/
