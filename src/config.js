@@ -30,7 +30,7 @@ const config = {
 			id: 'P403',
 			name: 'mouth of the watercourse',
 			lineMaxPercent: 33,
-			strokeStyle: "rgba(0, 0, 255, 0.15)"
+			strokeStyle: "rgba(0, 0, 255, 0.12)"
 		},
 	]
 };

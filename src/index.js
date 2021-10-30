@@ -1,33 +1,52 @@
 import config from './config.js';
 import { drawDot, drawLine } from './draw.js';
 
-let worker = new Worker('./../src/worker.js');
+let nextWorker = 0;
+// Create 4 workers, to allow multiple canvas renderings at once
+let workers = {
+	0: new Worker('./../src/worker.js'),
+	1: new Worker('./../src/worker.js'),
+	2: new Worker('./../src/worker.js'),
+	3: new Worker('./../src/worker.js'),
+};
+
+Object.keys(workers).forEach(function(workerKey) {
+	workers[workerKey].onmessage = function(e) {
+		let batchData = e.data;
+		let canvasesForBatch = wdMapCanvases[batchData.drawData.canvasIndex]
+		window.requestAnimationFrame( function() {
+			batchData.batchedValues.forEach( function(drawValue){
+				if(batchData.drawData.drawType === 'dot') {
+					drawDot(
+						canvasesForBatch.items.getContext("2d"),
+						drawValue,
+						batchData.drawData.intensityScale
+					)
+				} else {
+					drawLine(
+						canvasesForBatch[batchData.drawData.drawType].getContext("2d"),
+						drawValue,
+						batchData.drawData.intensityScale,
+						batchData.drawData.lineMaxPercent,
+						batchData.drawData.strokeStyle,
+					)
+				}
+			} )
+		} )
+	}
+});
+
+function postToWorker(data) {
+	console.log("Using worker: " + nextWorker)
+	workers[nextWorker].postMessage(data);
+	if(nextWorker === 3) {
+		nextWorker = 0;
+	} else {
+		nextWorker = nextWorker + 1;
+	}
+}
 
 const wdMapCanvases = {};
-
-worker.onmessage = function(e) {
-	let batchData = e.data;
-	let canvasesForBatch = wdMapCanvases[batchData.drawData.canvasIndex]
-	window.requestAnimationFrame( function() {
-		batchData.batchedValues.forEach( function(drawValue){
-			if(batchData.drawData.drawType === 'dot') {
-				drawDot(
-					canvasesForBatch.items.getContext("2d"),
-					drawValue,
-					batchData.drawData.intensityScale
-				)
-			} else {
-				drawLine(
-					canvasesForBatch[batchData.drawData.drawType].getContext("2d"),
-					drawValue,
-					batchData.drawData.intensityScale,
-					batchData.drawData.lineMaxPercent,
-					batchData.drawData.strokeStyle,
-				)
-			}
-		} )
-	} )
-}
 
 function showDensity(dateIndex, intensityScale) {
 	let mapConfig = config.maps[dateIndex]
@@ -67,7 +86,7 @@ function showDensity(dateIndex, intensityScale) {
 			if(canvas.getAttribute('data-render-scheduled') !== 'true') {
 				canvas.setAttribute('data-render-scheduled', 'true')
 				console.log("Requesting render: " + canvasIndex + " layer " + layerKey + " scale " + intensityScale);
-				worker.postMessage([canvasIndex, dateIndex, intensityScale, layerKey, mapConfig, layerConfig])
+				postToWorker([canvasIndex, dateIndex, intensityScale, layerKey, mapConfig, layerConfig])
 			}
 		}
 	});
