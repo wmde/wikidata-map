@@ -15,7 +15,8 @@ export function drawLine( ctx, values, intensityScale, lineMaxPercent, strokeSty
 	}
 
 	ctx.strokeStyle = strokeStyle;
-	ctx.lineWidth = intensityScale;
+	// Real intensityScale makes the lines too thick, so reduce it a bit
+	ctx.lineWidth = 2;
 	ctx.beginPath();
 	ctx.moveTo( x1, y1 );
 	ctx.lineTo( x2, y2 );

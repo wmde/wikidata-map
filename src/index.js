@@ -13,18 +13,18 @@ let workers = {
 Object.keys(workers).forEach(function(workerKey) {
 	workers[workerKey].onmessage = function(e) {
 		let batchData = e.data;
-		let canvasesForBatch = wdMapCanvases[batchData.drawData.canvasIndex]
+		let canvasForBatch = canvases[batchData.drawData.dateIndex][batchData.drawData.layerKey]
 		window.requestAnimationFrame( function() {
 			batchData.batchedValues.forEach( function(drawValue){
 				if(batchData.drawData.drawType === 'dot') {
 					drawDot(
-						canvasesForBatch.items.getContext("2d"),
+						canvasForBatch.getContext("2d"),
 						drawValue,
 						batchData.drawData.intensityScale
 					)
 				} else {
 					drawLine(
-						canvasesForBatch[batchData.drawData.drawType].getContext("2d"),
+						canvasForBatch.getContext("2d"),
 						drawValue,
 						batchData.drawData.intensityScale,
 						batchData.drawData.lineMaxPercent,
@@ -46,15 +46,18 @@ function postToWorker(data) {
 	}
 }
 
-const wdMapCanvases = {};
+const canvases = {};
 
-function showDensity(dateIndex, intensityScale) {
-	let layerConfig = config.layers
-	let canvasIndex = dateIndex + '.' + intensityScale;
+function updateCanvas() {
+	console.log("updateCanvas called");
+	const dateIndex = dateForm.querySelector('input[name="date"]:checked').value;
+	const intensityScale = parseInt(intensityForm.querySelector('input[name="scale"]:checked').value);
+	let itemCanvasKey = 'items.' + intensityScale
+	let propertyLayerConfig = config.layers
 
 	// TODO generate this dynamically?
 	const layerStates = {
-		items: layerForm.querySelector('input[name="layer-items"]').checked,
+		[itemCanvasKey]: layerForm.querySelector('input[name="layer-items"]').checked,
 		P17: layerForm.querySelector('input[name="layer-P17"]').checked,
 		P36: layerForm.querySelector('input[name="layer-P36"]').checked,
 		P47: layerForm.querySelector('input[name="layer-P47"]').checked,
@@ -65,32 +68,38 @@ function showDensity(dateIndex, intensityScale) {
 		P403: layerForm.querySelector('input[name="layer-P403"]').checked,
 	};
 
-	// Add any missing canvases & trigger render
-	if (!wdMapCanvases[canvasIndex]) {
-		wdMapCanvases[canvasIndex] = createCanvases(layerConfig);
-		Object.keys(wdMapCanvases[canvasIndex]).forEach(function(layerKey) {
-			wdMapCanvases[canvasIndex][layerKey].id = "canvas_" + canvasIndex
-			document.querySelector('#canvas-container').appendChild(wdMapCanvases[canvasIndex][layerKey]);
-		});
+	// Create any missing canvases that we need
+	if (!canvases[dateIndex]) {
+		canvases[dateIndex] = {};
+		propertyLayerConfig.forEach( function(layerData){
+			let propertyId = layerData.id
+			canvases[dateIndex][propertyId] = newCanvas('clear');
+		})
+	}
+	if (!canvases[dateIndex][itemCanvasKey]) {
+		canvases[dateIndex][itemCanvasKey] = newCanvas('black')
 	}
 
-	// Hide all layers
-	Object.keys(wdMapCanvases).forEach(function(canvasIndex) {
-		Object.keys(wdMapCanvases[canvasIndex]).forEach(function(layerKey) {
-			wdMapCanvases[canvasIndex][layerKey].style.display = 'none';
+	// Hide them ALL, and attach them to the DOM if not already there
+	Object.keys(canvases).forEach(function(dateIndex) {
+		Object.keys(canvases[dateIndex]).forEach(function(canvasKey) {
+			canvases[dateIndex][canvasKey].style.display = 'none';
+			if(canvases[dateIndex][canvasKey].id != "canvas_" + dateIndex + "_" + canvasKey ) {
+				canvases[dateIndex][canvasKey].id = "canvas_" + dateIndex + "_" + canvasKey
+				document.querySelector('#canvas-container').appendChild(canvases[dateIndex][canvasKey]);
+			}
 		});
 	});
 
-	// Show the requested layers
+	// Show (and render if needed) the requested canvases
 	Object.keys(layerStates).forEach(function(layerKey) {
 		if(layerStates[layerKey] === true) {
-			wdMapCanvases[canvasIndex][layerKey].style.display = 'block';
-			let canvas = wdMapCanvases[canvasIndex][layerKey]
+			let canvas = canvases[dateIndex][layerKey]
 			canvas.style.display = 'block';
 			if(canvas.getAttribute('data-render-scheduled') !== 'true') {
 				canvas.setAttribute('data-render-scheduled', 'true')
-				console.log("Requesting render: " + canvasIndex + " layer " + layerKey + " scale " + intensityScale);
-				postToWorker([canvasIndex, dateIndex, intensityScale, layerKey, layerConfig])
+				console.log("Requesting render: " + dateIndex + " layer " + layerKey);
+				postToWorker([layerKey, dateIndex, intensityScale, propertyLayerConfig])
 			}
 		}
 	});
@@ -106,29 +115,13 @@ function newCanvas(fillStyle){
 	const ctx = canvas.getContext("2d");
 	if(fillStyle === 'clear') {
 		ctx.clearRect(0, 0, canvas.width, canvas.height)
+		canvas.style.zIndex = 1; // Should always be in front, as it is clear
 	} else {
 		ctx.fillStyle = fillStyle;
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		canvas.style.zIndex = 0;
 	}
 	return canvas
-}
-
-function createCanvases(layerConfig) {
-	const allCanvases = {
-		items: newCanvas('black'),
-	};
-	layerConfig.forEach( function(layer){
-		allCanvases[layer.id] = newCanvas('clear');
-	})
-	return allCanvases;
-}
-
-function updateCanvas() {
-	const dateIndex = dateForm.querySelector('input[name="date"]:checked').value;
-	const intensityScale = parseInt(intensityForm.querySelector('input[name="scale"]:checked').value);
-
-	console.log("updateCanvas called");
-	showDensity(dateIndex, intensityScale);
 }
 
 const dateForm = document.getElementById('dateSelector');
