@@ -1,12 +1,6 @@
 #!/bin/bash
 # You can run this like ./bin/data-old-1.sh 2015-10-05 2015/20151005
 
-# To generate for...
-# 2016-10-03 2016/20161003
-# 2017-10-02 2017/20171002
-# 2018-10-08 20181008
-# 2019-10-07 20191007
-
 WIKIDATA_MAP_SNAPSHOT=$1
 WIKIDATA_ANALYSIS_DATE=$2
 WIKIDATA_MAP_ITEM_COORD_TABLE=addshore.wikidata_map_item_coordinates_old_backfill_text
@@ -39,7 +33,7 @@ SELECT
     snapshot
 FROM ${WIKIDATA_MAP_ITEM_COORD_TABLE}
 WHERE snapshot='${WIKIDATA_MAP_SNAPSHOT}'
-    AND globe = \"http://www.wikidata.org/entity/Q2\";" > map-process-1-tmp.hql
+    AND globe = \"http://www.wikidata.org/entity/Q2\";" > map-process-1-tmp-${WIKIDATA_MAP_SNAPSHOT}.hql
 echo "SET hive.exec.dynamic.partition.mode=nonstrict;
 INSERT INTO addshore.wikidata_map_item_relation_pixels
 PARTITION(snapshot)
@@ -65,11 +59,11 @@ GROUP BY
     b.posx,
     b.posy,
     x.snapshot
-LIMIT 100000000;" > map-process-2-tmp.hql
+LIMIT 100000000;" > map-process-2-tmp-${WIKIDATA_MAP_SNAPSHOT}.hql
 
 # Actually process
-spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -f map-process-1-tmp.hql
-spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -f map-process-2-tmp.hql
+spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -f map-process-1-tmp-${WIKIDATA_MAP_SNAPSHOT}.hql
+spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -f map-process-2-tmp-${WIKIDATA_MAP_SNAPSHOT}.hql
 
 # Generate our files
 spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx, posy, COUNT(*) as count FROM addshore.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
