@@ -6,31 +6,34 @@
     <link rel="stylesheet" href="./css.css">
 </head>
 <body>
-<!--TODO selectors dynamically from config...-->
-<span>Date selector:</span>
-<form id="dateSelector">
-    <label>2020-08-24
-        <input type="radio" name="date" value="2020-08-24" checked/>
-    </label>
-    <label>2021-10-18
-        <input type="radio" name="date" value="2021-10-18" checked/>
-    </label>
-</form>
-<span>Layer selector:</span>
-<form id="layerSelector">
-    <label>items
-        <input type="checkbox" name="layer-items" value="1" checked/>
-    </label>
-    <label>twinned administrative body
-        <input type="checkbox" name="layer-P190" value="1"/>
-    </label>
-    <label>adjacent station
-        <input type="checkbox" name="layer-P197" value="1"/>
-    </label>
-    <label>mouth of the watercourse
-        <input type="checkbox" name="layer-P403" value="1"/>
-    </label>
-</form>
+<div id="controls">
+    <!--TODO selectors dynamically from config...-->
+    <span>Date selector:</span>
+    <form id="dateSelector">
+        <label>2020-08-24
+            <input type="radio" name="date" value="2020-08-24"/>
+        </label>
+        <label>2021-10-18
+            <input type="radio" name="date" value="2021-10-18" checked/>
+        </label>
+    </form>
+    <span>Layer selector:</span>
+    <form id="layerSelector">
+        <label>items
+            <input type="checkbox" name="layer-items" value="1" checked/>
+        </label>
+        <label>twinned administrative body
+            <input type="checkbox" name="layer-P190" value="1"/>
+        </label>
+        <label>adjacent station
+            <input type="checkbox" name="layer-P197" value="1"/>
+        </label>
+        <label>mouth of the watercourse
+            <input type="checkbox" name="layer-P403" value="1"/>
+        </label>
+    </form>
+    <span>CC0 Data & Vislauzation. Code on <a href="https://github.com/wmde/wikidata-map">GitHub</a>.</span>
+</div>
 <!--This is needed when we are using the build step again: <script src="main.js"></script>-->
 <script type="module" src="../src/index.js"></script>
 <div id="canvas-container" style="position: relative;">

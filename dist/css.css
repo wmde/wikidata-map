@@ -2,3 +2,9 @@ canvas{
     height: auto; 
     width:100%; 
 }
+
+#controls{
+    position:absolute;
+    z-index: 99;
+    background: rgba(255, 208, 0, 0.73);
+  }
