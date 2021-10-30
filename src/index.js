@@ -49,8 +49,6 @@ function showDensity(dateIndex, intensityScale) {
 			wdMapCanvases[canvasIndex][layerKey].id = "canvas_" + canvasIndex
 			document.querySelector('#canvas-container').appendChild(wdMapCanvases[canvasIndex][layerKey]);
 		});
-		// Start the render
-		worker.postMessage([canvasIndex, mapConfig, layerConfig, intensityScale])
 	}
 
 	// Hide all layers
@@ -64,6 +62,13 @@ function showDensity(dateIndex, intensityScale) {
 	Object.keys(layerStates).forEach(function(layerKey) {
 		if(layerStates[layerKey] === true) {
 			wdMapCanvases[canvasIndex][layerKey].style.display = 'block';
+			let canvas = wdMapCanvases[canvasIndex][layerKey]
+			canvas.style.display = 'block';
+			if(canvas.getAttribute('data-render-scheduled') !== 'true') {
+				canvas.setAttribute('data-render-scheduled', 'true')
+				console.log("Requesting render: " + canvasIndex + " layer " + layerKey + " scale " + intensityScale);
+				worker.postMessage([canvasIndex, dateIndex, intensityScale, layerKey, mapConfig, layerConfig])
+			}
 		}
 	});
 }
@@ -97,7 +102,7 @@ function updateCanvas() {
 	const dateIndex = dateForm.querySelector('input[name="date"]:checked').value;
 	const intensityScale = parseInt(intensityForm.querySelector('input[name="scale"]:checked').value);
 
-	console.log("updateCanvas with: " + dateIndex + " scale " + intensityScale);
+	console.log("updateCanvas called");
 	showDensity(dateIndex, intensityScale);
 }
 
