@@ -12,7 +12,12 @@ canvas{
     position:absolute;
     z-index: 99;
     background: rgba(255, 208, 0, 0.50);
-  }
+    padding: 2px;
+}
+
+.control-header{
+    font-weight: bold;
+}
 
 #configToggleLabel {
     background: white;

@@ -10,16 +10,19 @@
 <label id="configToggleLabel" for="configToggle">Show/Hide Controls</label>
 <div id="controls">
     <!--TODO selectors dynamically from config...-->
-    <span>Date selector:</span>
+    <span class="control-header">Date selector:</span>
     <form id="dateSelector">
-        <label>2020-08-24
+        <label>2014-11-03
+            <input type="radio" name="date" value="2014-11-03"/>
+        </label>
+        <label>2020-08-24*
             <input type="radio" name="date" value="2020-08-24"/>
         </label>
         <label>2021-10-18
             <input type="radio" name="date" value="2021-10-18" checked/>
         </label>
     </form>
-    <span>Layer selector:</span>
+    <span class="control-header">Layer selector:</span>
     <form id="layerSelector">
         <label>items
             <input type="checkbox" name="layer-items" value="1" checked/>
@@ -49,9 +52,8 @@
             <input type="checkbox" name="layer-P403" value="1"/>
         </label>
     </form>
-    <span>All checkboxes will currently work for 2021-10-18 only.</span><br>
-    <span>2020-08-24 only has data for P190 P197 P403.</span><br>
-    <span>Intensity selector:</span>
+    <span>* 2020-08-24 only has data for P190 P197 P403.</span><br>
+    <span class="control-header">Intensity selector:</span>
     <form id="intensitySelector">
         <label>1
             <input type="radio" name="scale" value="1"/>
@@ -81,9 +83,8 @@
             <input type="radio" name="scale" value="100"/>
         </label>
     </form>
-    <span>CC0 Data & Visualization. Code on <a href="https://github.com/wmde/wikidata-map">GitHub</a>.</span><br>
-    <span>Will render up to 4 layers at once.</span><br>
-    <span>Once rendered, they will remain until you refresh.</span><br>
+    <span>You can show or hide this control box with the toggle hidden in the top right of this page.</span><br>
+    <span>CC0 Data & Visualization. Code on <a href="https://github.com/wmde/wikidata-map">GitHub</a>.</span>
 </div>
 <!--This is needed when we are using the build step again: <script src="main.js"></script>-->
 <script type="module" src="../src/index.js"></script>

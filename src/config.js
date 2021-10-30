@@ -1,18 +1,4 @@
 const config = {
-	maps: {
-		'2020-08-24' : {
-			x: 7680,
-			y: 4320,
-			url: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-2020-08-24-7680-4320-pixels.csv',
-			layerUrl: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-2020-08-24-7680-4320-relation-pixels-{property}.csv',
-		},
-		'2021-10-18' : {
-			x: 7680,
-			y: 4320,
-			url: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-2021-10-18-7680-4320-pixels.csv',
-			layerUrl: 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-2021-10-18-7680-4320-relation-pixels-{property}.csv',
-		}
-	},
 	layers: [
 		{
 			id: 'P17',

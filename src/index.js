@@ -49,7 +49,6 @@ function postToWorker(data) {
 const wdMapCanvases = {};
 
 function showDensity(dateIndex, intensityScale) {
-	let mapConfig = config.maps[dateIndex]
 	let layerConfig = config.layers
 	let canvasIndex = dateIndex + '.' + intensityScale;
 
@@ -68,7 +67,7 @@ function showDensity(dateIndex, intensityScale) {
 
 	// Add any missing canvases & trigger render
 	if (!wdMapCanvases[canvasIndex]) {
-		wdMapCanvases[canvasIndex] = createCanvases(mapConfig, layerConfig);
+		wdMapCanvases[canvasIndex] = createCanvases(layerConfig);
 		Object.keys(wdMapCanvases[canvasIndex]).forEach(function(layerKey) {
 			wdMapCanvases[canvasIndex][layerKey].id = "canvas_" + canvasIndex
 			document.querySelector('#canvas-container').appendChild(wdMapCanvases[canvasIndex][layerKey]);
@@ -91,13 +90,15 @@ function showDensity(dateIndex, intensityScale) {
 			if(canvas.getAttribute('data-render-scheduled') !== 'true') {
 				canvas.setAttribute('data-render-scheduled', 'true')
 				console.log("Requesting render: " + canvasIndex + " layer " + layerKey + " scale " + intensityScale);
-				postToWorker([canvasIndex, dateIndex, intensityScale, layerKey, mapConfig, layerConfig])
+				postToWorker([canvasIndex, dateIndex, intensityScale, layerKey, layerConfig])
 			}
 		}
 	});
 }
 
-function newCanvas(x, y, fillStyle){
+function newCanvas(fillStyle){
+	const x = 7680;
+	const y = 4320;
 	const canvas = document.createElement('canvas');
 	canvas.width = x;
 	canvas.height = y;
@@ -112,12 +113,12 @@ function newCanvas(x, y, fillStyle){
 	return canvas
 }
 
-function createCanvases(mapConfig, layerConfig) {
+function createCanvases(layerConfig) {
 	const allCanvases = {
-		items: newCanvas(mapConfig.x, mapConfig.y, 'black'),
+		items: newCanvas('black'),
 	};
 	layerConfig.forEach( function(layer){
-		allCanvases[layer.id] = newCanvas(mapConfig.x, mapConfig.y, 'clear');
+		allCanvases[layer.id] = newCanvas('clear');
 	})
 	return allCanvases;
 }
