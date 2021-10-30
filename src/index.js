@@ -56,6 +56,11 @@ function showDensity(dateIndex, intensityScale) {
 	// TODO generate this dynamically?
 	const layerStates = {
 		items: layerForm.querySelector('input[name="layer-items"]').checked,
+		P17: layerForm.querySelector('input[name="layer-P17"]').checked,
+		P36: layerForm.querySelector('input[name="layer-P36"]').checked,
+		P47: layerForm.querySelector('input[name="layer-P47"]').checked,
+		P138: layerForm.querySelector('input[name="layer-P138"]').checked,
+		P150: layerForm.querySelector('input[name="layer-P150"]').checked,
 		P190: layerForm.querySelector('input[name="layer-P190"]').checked,
 		P197: layerForm.querySelector('input[name="layer-P197"]').checked,
 		P403: layerForm.querySelector('input[name="layer-P403"]').checked,

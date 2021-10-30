@@ -138,6 +138,11 @@ WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
 
 Currently this is done for:
 
+- [P17](https://www.wikidata.org/wiki/Property:P17)
+- [P36](https://www.wikidata.org/wiki/Property:P36)
+- [P47](https://www.wikidata.org/wiki/Property:P47)
+- [P138](https://www.wikidata.org/wiki/Property:P138)
+- [P150](https://www.wikidata.org/wiki/Property:P150)
 - [P190 (twinned administrative body)](https://www.wikidata.org/wiki/Property:P190)
 - [P197 (adjacent station)](https://www.wikidata.org/wiki/Property:P197)
 - [P403 (mouth of watercourse)](https://www.wikidata.org/wiki/Property:P403)
@@ -154,7 +159,7 @@ FROM wmf.wikidata_entity
 LATERAL VIEW explode(claims) t AS claim
 WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
     AND typ = 'item'
-    AND claim.mainSnak.property IN ( 'P190', 'P197', 'P403' )
+    AND claim.mainSnak.property IN ( 'P17', 'P36', 'P47', 'P138', 'P150', 'P190', 'P197', 'P403' )
     AND claim.mainSnak.typ = 'value';
 ```
 
@@ -209,6 +214,7 @@ Set an environment variable with the snapshot date:
 
 ```sh
 WIKIDATA_MAP_SNAPSHOT='2021-10-18'
+PropertyArray=("P17"  "P36"  "P47"  "P138"  "P150"  "P190"  "P197"  "P403")
 ```
 
 And write the files...
@@ -218,9 +224,10 @@ And write the files...
 
 ```sh
 spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx, posy, COUNT(*) as count FROM addshore.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
-spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P190' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv
-spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P197' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv
-spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = 'P403' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv
+for PROPERTY in ${PropertyArray[*]}; do
+    echo $PROPERTY
+    spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = '${PROPERTY}' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv
+done
 ```
 
 You should find the new files on disk in your current working directory.
@@ -228,9 +235,10 @@ You can check how many lines they have.
 
 ```sh
 cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv | wc -l
-cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv | wc -l
-cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv | wc -l
-cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv | wc -l
+for PROPERTY in ${PropertyArray[*]}; do
+    echo $PROPERTY
+    cat map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv | wc -l
+done
 ```
 
 ## Publishing data
@@ -243,15 +251,17 @@ Set an environment variable with the snapshot date:
 
 ```sh
 WIKIDATA_MAP_SNAPSHOT='2021-10-18'
+PropertyArray=("P17"  "P36"  "P47"  "P138"  "P150"  "P190"  "P197"  "P403")
 ```
 
 And move them into the published directory
 
-```
+```sh
 cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
-cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P190.csv 
-cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P197.csv 
-cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-P403.csv 
+for PROPERTY in ${PropertyArray[*]}; do
+    echo $PROPERTY
+    cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv 
+done
 published-sync
 ```
 
