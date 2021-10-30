@@ -2,13 +2,14 @@ self.importScripts(
 	'streams.js'
 );
 
-self.startFetch = async function( dateIndex, mapConfig, layerConfig ) {
+self.startFetch = async function( canvasIndex, mapConfig, layerConfig, intensityScale ) {
 	await fetch(mapConfig.url, { mode: "cors" })
 		.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
 		.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 5000 )})
 		.then(batchedStream => {return batchedToWorkerMessageReadableStream( batchedStream.getReader(), postMessage, {
-			dateIndex: dateIndex,
+			canvasIndex: canvasIndex,
 			drawType: 'dot',
+			intensityScale: intensityScale,
 		} )})
 		.catch(err => console.error(err));
 
@@ -19,8 +20,9 @@ self.startFetch = async function( dateIndex, mapConfig, layerConfig ) {
 			.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
 			.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 5000 )})
 			.then(batchedStream => {return batchedToWorkerMessageReadableStream( batchedStream.getReader(), postMessage, {
-				dateIndex: dateIndex,
+				canvasIndex: canvasIndex,
 				drawType: propertyId,
+				intensityScale: intensityScale,
 				lineMaxPercent: layer.lineMaxPercent,
 				strokeStyle: layer.strokeStyle,
 			} )})
@@ -29,7 +31,7 @@ self.startFetch = async function( dateIndex, mapConfig, layerConfig ) {
 }
 
 onmessage = function(e) {
-	const [dateIndex, mapConfig, layerConfig] = e.data;
-	console.log('Worker: received message to render ' + dateIndex);
-	self.startFetch( dateIndex, mapConfig, layerConfig )
+	const [canvasIndex, mapConfig, layerConfig, intensityScale] = e.data;
+	console.log('Worker: received message to render ' + canvasIndex);
+	self.startFetch( canvasIndex, mapConfig, layerConfig, intensityScale )
 }

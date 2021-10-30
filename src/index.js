@@ -7,18 +7,20 @@ const wdMapCanvases = {};
 
 worker.onmessage = function(e) {
 	let batchData = e.data;
-	let canvasesForBatch = wdMapCanvases[batchData.drawData.dateIndex]
+	let canvasesForBatch = wdMapCanvases[batchData.drawData.canvasIndex]
 	window.requestAnimationFrame( function() {
 		batchData.batchedValues.forEach( function(drawValue){
 			if(batchData.drawData.drawType === 'dot') {
 				drawDot(
 					canvasesForBatch.items.getContext("2d"),
-					drawValue
+					drawValue,
+					batchData.drawData.intensityScale
 				)
 			} else {
 				drawLine(
 					canvasesForBatch[batchData.drawData.drawType].getContext("2d"),
 					drawValue,
+					batchData.drawData.intensityScale,
 					batchData.drawData.lineMaxPercent,
 					batchData.drawData.strokeStyle,
 				)
@@ -27,33 +29,43 @@ worker.onmessage = function(e) {
 	} )
 }
 
-function showDensity(dateIndex, layerConfig, layerStates) {
+function showDensity(dateIndex, intensityScale) {
 	let mapConfig = config.maps[dateIndex]
+	let layerConfig = config.layers
+	let canvasIndex = dateIndex + '.' + intensityScale;
+
+	// TODO generate this dynamically?
+	const layerStates = {
+		items: layerForm.querySelector('input[name="layer-items"]').checked,
+		P190: layerForm.querySelector('input[name="layer-P190"]').checked,
+		P197: layerForm.querySelector('input[name="layer-P197"]').checked,
+		P403: layerForm.querySelector('input[name="layer-P403"]').checked,
+	};
 
 	// Add any missing canvases & trigger render
-	if (!wdMapCanvases[dateIndex]) {
-		wdMapCanvases[dateIndex] = createCanvases(mapConfig, layerConfig);
-		Object.keys(wdMapCanvases[dateIndex]).forEach(function(key) {
-			document.querySelector('#canvas-container').appendChild(wdMapCanvases[dateIndex][key]);
+	if (!wdMapCanvases[canvasIndex]) {
+		wdMapCanvases[canvasIndex] = createCanvases(mapConfig, layerConfig);
+		Object.keys(wdMapCanvases[canvasIndex]).forEach(function(layerKey) {
+			wdMapCanvases[canvasIndex][layerKey].id = "canvas_" + canvasIndex
+			document.querySelector('#canvas-container').appendChild(wdMapCanvases[canvasIndex][layerKey]);
 		});
 		// Start the render
-		worker.postMessage([dateIndex, mapConfig, layerConfig])
+		worker.postMessage([canvasIndex, mapConfig, layerConfig, intensityScale])
 	}
 
 	// Hide all layers
-	Object.keys(wdMapCanvases).forEach(function(dateIndex) {
-		Object.keys(wdMapCanvases[dateIndex]).forEach(function(layerKey) {
-			wdMapCanvases[dateIndex][layerKey].style.display = 'none';
+	Object.keys(wdMapCanvases).forEach(function(canvasIndex) {
+		Object.keys(wdMapCanvases[canvasIndex]).forEach(function(layerKey) {
+			wdMapCanvases[canvasIndex][layerKey].style.display = 'none';
 		});
 	});
 
 	// Show the requested layers
-	Object.keys(layerStates).forEach(function(key) {
-		if(layerStates[key] === true) {
-			wdMapCanvases[dateIndex][key].style.display = 'block';
+	Object.keys(layerStates).forEach(function(layerKey) {
+		if(layerStates[layerKey] === true) {
+			wdMapCanvases[canvasIndex][layerKey].style.display = 'block';
 		}
 	});
-
 }
 
 function newCanvas(x, y, fillStyle){
@@ -83,18 +95,10 @@ function createCanvases(mapConfig, layerConfig) {
 
 function updateCanvas() {
 	const dateIndex = dateForm.querySelector('input[name="date"]:checked').value;
+	const intensityScale = parseInt(intensityForm.querySelector('input[name="scale"]:checked').value);
 
-	console.log("updateCanvas with: " + dateIndex)
-
-	// TODO generate this dynamically?
-	const layerStates = {
-		items: layerForm.querySelector('input[name="layer-items"]').checked,
-		P190: layerForm.querySelector('input[name="layer-P190"]').checked,
-		P197: layerForm.querySelector('input[name="layer-P197"]').checked,
-		P403: layerForm.querySelector('input[name="layer-P403"]').checked,
-	};
-
-	showDensity(dateIndex, config.layers, layerStates);
+	console.log("updateCanvas with: " + dateIndex + " scale " + intensityScale);
+	showDensity(dateIndex, intensityScale);
 }
 
 const dateForm = document.getElementById('dateSelector');
@@ -102,5 +106,8 @@ dateForm.addEventListener('change', updateCanvas);
 
 const layerForm = document.getElementById('layerSelector');
 layerForm.addEventListener('change', updateCanvas);
+
+const intensityForm = document.getElementById('intensitySelector');
+intensityForm.addEventListener('change', updateCanvas);
 
 updateCanvas();
