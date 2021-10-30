@@ -2,12 +2,12 @@ self.importScripts(
 	'streams.js'
 );
 
-self.startFetch = async function( resolutionKey, mapConfig, layerConfig ) {
+self.startFetch = async function( dateIndex, mapConfig, layerConfig ) {
 	await fetch(mapConfig.url, { mode: "cors" })
 		.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
 		.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 5000 )})
 		.then(batchedStream => {return batchedToWorkerMessageReadableStream( batchedStream.getReader(), postMessage, {
-			resolutionKey: resolutionKey,
+			dateIndex: dateIndex,
 			drawType: 'dot',
 		} )})
 		.catch(err => console.error(err));
@@ -19,7 +19,7 @@ self.startFetch = async function( resolutionKey, mapConfig, layerConfig ) {
 			.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
 			.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 5000 )})
 			.then(batchedStream => {return batchedToWorkerMessageReadableStream( batchedStream.getReader(), postMessage, {
-				resolutionKey: resolutionKey,
+				dateIndex: dateIndex,
 				drawType: propertyId,
 				lineMaxPercent: layer.lineMaxPercent,
 				strokeStyle: layer.strokeStyle,
@@ -29,7 +29,7 @@ self.startFetch = async function( resolutionKey, mapConfig, layerConfig ) {
 }
 
 onmessage = function(e) {
-	const [resolutionKey, mapConfig, layerConfig] = e.data;
-	console.log('Worker: received message to render ' + resolutionKey);
-	self.startFetch( resolutionKey, mapConfig, layerConfig )
+	const [dateIndex, mapConfig, layerConfig] = e.data;
+	console.log('Worker: received message to render ' + dateIndex);
+	self.startFetch( dateIndex, mapConfig, layerConfig )
 }

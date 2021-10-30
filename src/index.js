@@ -7,7 +7,7 @@ const wdMapCanvases = {};
 
 worker.onmessage = function(e) {
 	let batchData = e.data;
-	let canvasesForBatch = wdMapCanvases[batchData.drawData.resolutionKey]
+	let canvasesForBatch = wdMapCanvases[batchData.drawData.dateIndex]
 	window.requestAnimationFrame( function() {
 		batchData.batchedValues.forEach( function(drawValue){
 			if(batchData.drawData.drawType === 'dot') {
@@ -27,34 +27,30 @@ worker.onmessage = function(e) {
 	} )
 }
 
-function getResolutionKey(mapConfig) {
-	return `${mapConfig.x}x${mapConfig.y}`;
-}
-
-function showDensity(mapConfig, layerConfig, layerStates) {
-	let resolutionKey = getResolutionKey(mapConfig)
+function showDensity(dateIndex, layerConfig, layerStates) {
+	let mapConfig = config.maps[dateIndex]
 
 	// Add any missing canvases & trigger render
-	if (!wdMapCanvases[resolutionKey]) {
-		wdMapCanvases[resolutionKey] = createCanvases(resolutionKey, mapConfig, layerConfig);
-		Object.keys(wdMapCanvases[resolutionKey]).forEach(function(key) {
-			document.querySelector('#canvas-container').appendChild(wdMapCanvases[resolutionKey][key]);
+	if (!wdMapCanvases[dateIndex]) {
+		wdMapCanvases[dateIndex] = createCanvases(mapConfig, layerConfig);
+		Object.keys(wdMapCanvases[dateIndex]).forEach(function(key) {
+			document.querySelector('#canvas-container').appendChild(wdMapCanvases[dateIndex][key]);
 		});
 		// Start the render
-		worker.postMessage([resolutionKey, mapConfig, layerConfig])
+		worker.postMessage([dateIndex, mapConfig, layerConfig])
 	}
 
 	// Hide all layers
-	Object.keys(wdMapCanvases).forEach(function(resolutionKey) {
-		Object.keys(wdMapCanvases[resolutionKey]).forEach(function(layerKey) {
-			wdMapCanvases[resolutionKey][layerKey].style.display = 'none';
+	Object.keys(wdMapCanvases).forEach(function(dateIndex) {
+		Object.keys(wdMapCanvases[dateIndex]).forEach(function(layerKey) {
+			wdMapCanvases[dateIndex][layerKey].style.display = 'none';
 		});
 	});
 
 	// Show the requested layers
 	Object.keys(layerStates).forEach(function(key) {
 		if(layerStates[key] === true) {
-			wdMapCanvases[resolutionKey][key].style.display = 'block';
+			wdMapCanvases[dateIndex][key].style.display = 'block';
 		}
 	});
 
@@ -75,9 +71,7 @@ function newCanvas(x, y, fillStyle){
 	return canvas
 }
 
-function createCanvases(resolutionKeyToRender, mapConfig, layerConfig) {
-	let resolutionKey = getResolutionKey(mapConfig)
-
+function createCanvases(mapConfig, layerConfig) {
 	const allCanvases = {
 		items: newCanvas(mapConfig.x, mapConfig.y, 'black'),
 	};
@@ -88,7 +82,9 @@ function createCanvases(resolutionKeyToRender, mapConfig, layerConfig) {
 }
 
 function updateCanvas() {
-	const resolutionIndex = resolutionForm.querySelector('input[name="resolution"]:checked').value;
+	const dateIndex = dateForm.querySelector('input[name="date"]:checked').value;
+
+	console.log("updateCanvas with: " + dateIndex)
 
 	// TODO generate this dynamically?
 	const layerStates = {
@@ -98,11 +94,11 @@ function updateCanvas() {
 		P403: layerForm.querySelector('input[name="layer-P403"]').checked,
 	};
 
-	showDensity(config.maps[resolutionIndex], config.layers, layerStates);
+	showDensity(dateIndex, config.layers, layerStates);
 }
 
-const resolutionForm = document.getElementById('resolutionSelector');
-resolutionForm.addEventListener('change', updateCanvas);
+const dateForm = document.getElementById('dateSelector');
+dateForm.addEventListener('change', updateCanvas);
 
 const layerForm = document.getElementById('layerSelector');
 layerForm.addEventListener('change', updateCanvas);
