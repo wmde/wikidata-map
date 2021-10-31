@@ -48,4 +48,5 @@ canvas{
 
 .zoomed {
   transform: scale(4);
+  transform-origin: top left;
 }
