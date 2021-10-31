@@ -2,9 +2,11 @@
 
 A frontend to render density of wikidata items on a map.
 
-You can find a verison of this code hsoted by GitHub pages.
+You can find a verison of this code hosted by GitHub pages.
 
 [https://wmde.github.io/wikidata-map/dist/index.html](https://wmde.github.io/wikidata-map/dist/index.html)
+
+You can find a static gallery of images of the years [on commons](https://commons.wikimedia.org/wiki/Wikidata_map)
 
 ## Development
 
