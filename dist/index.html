@@ -96,12 +96,13 @@
             <input type="radio" name="scale" value="100"/>
         </label>
     </form>
+    <span>You can 4x zoom the image by clicking on it.</span><br>
     <span>You can show or hide this control box with the toggle hidden in the top right of this page.</span><br>
     <span>CC0 Data & Visualization. Code on <a href="https://github.com/wmde/wikidata-map">GitHub</a>.</span>
 </div>
 <!--This is needed when we are using the build step again: <script src="main.js"></script>-->
 <script type="module" src="../src/index.js"></script>
-<div id="canvas-container" style="position: relative;">
+<div id="canvas-container" class="zoomable" style="position: relative;">
 </div>
 </body>
 </html>

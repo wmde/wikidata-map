@@ -133,4 +133,14 @@ layerForm.addEventListener('change', updateCanvas);
 const intensityForm = document.getElementById('intensitySelector');
 intensityForm.addEventListener('change', updateCanvas);
 
+const megaCanvas = document.querySelector('#canvas-container')
+megaCanvas.addEventListener('click', zoomCanvas);
+function zoomCanvas() {
+	if(megaCanvas.classList.contains('zoomed')) {
+		megaCanvas.classList.remove('zoomed');
+	} else {
+		megaCanvas.classList.add('zoomed');
+	}
+}
+
 updateCanvas();
