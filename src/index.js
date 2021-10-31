@@ -2,13 +2,19 @@ import config from './config.js';
 import { drawDot, drawLine } from './draw.js';
 
 let nextWorker = 0;
-// Create 4 workers, to allow multiple canvas renderings at once
-let workers = {
-	0: new Worker('./../src/worker.js'),
-	1: new Worker('./../src/worker.js'),
-	2: new Worker('./../src/worker.js'),
-	3: new Worker('./../src/worker.js'),
-};
+let workerCount = window.navigator.hardwareConcurrency
+// hardwareConcurrency will be undefined on some old browsers, so just assume we can make 2 workers?
+if(workerCount == undefined) {
+	workerCount = 2;
+}
+console.log("Detected cores to run " + workerCount + " workers");
+
+// Create workers, to allow multiple canvas data processings at once in the background
+let workers = {};
+for (let i = 0; i < workerCount; i++) {
+	console.log("Creating worker: " + i)
+	workers[i] = new Worker('./../src/worker.js')
+}
 
 /**
  * Receive batched draw data to render from a worker
@@ -45,7 +51,7 @@ Object.keys(workers).forEach(function(workerKey) {
 function postToWorker(data) {
 	console.log("Using worker: " + nextWorker)
 	workers[nextWorker].postMessage(data);
-	if(nextWorker === 3) {
+	if(nextWorker === (workerCount-1)) {
 		nextWorker = 0;
 	} else {
 		nextWorker = nextWorker + 1;
