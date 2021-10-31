@@ -10,6 +10,9 @@ let workers = {
 	3: new Worker('./../src/worker.js'),
 };
 
+/**
+ * Receive batched draw data to render from a worker
+ */
 Object.keys(workers).forEach(function(workerKey) {
 	workers[workerKey].onmessage = function(e) {
 		let batchData = e.data;
@@ -36,6 +39,9 @@ Object.keys(workers).forEach(function(workerKey) {
 	}
 });
 
+/**
+ * Post work to one of our pool of workers
+ */
 function postToWorker(data) {
 	console.log("Using worker: " + nextWorker)
 	workers[nextWorker].postMessage(data);

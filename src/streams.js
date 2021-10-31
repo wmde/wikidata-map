@@ -1,3 +1,8 @@
+
+/**
+ * Takes a stream of data from a CSV file, normally from a http request such as `response.body.getReader()`
+ * splits it into lines, and split those lines into their CSV values, and sends it onto the next processor.
+ **/
 let chunksToLinesReadableStream = function( reader ) {
 	const decoder = new TextDecoder();
 	return new ReadableStream({
@@ -20,6 +25,9 @@ let chunksToLinesReadableStream = function( reader ) {
 	})
 }
 
+/**
+ * Takes a stream of values, and batches of `batchSize` before sending them onto the next processor.
+ **/
 let valuesToBatchedValuesReadableStream = function( reader, batchSize ) {
 	let soFar = [];
 	return new ReadableStream({
@@ -45,6 +53,9 @@ let valuesToBatchedValuesReadableStream = function( reader, batchSize ) {
 	})
 }
 
+/**
+ * Takes a stream of batched values, attaches some drawData to them and posts that message.
+ **/
 let batchedToWorkerMessageReadableStream = function( reader, postMessage, drawData ) {
 	return new ReadableStream({
 		start(controller) {

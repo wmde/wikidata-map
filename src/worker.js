@@ -2,6 +2,12 @@ self.importScripts(
 	'streams.js'
 );
 
+/**
+ * - Receive an instruction to render a layer
+ * - Fetch the data from the web
+ * - Use stream processing to decode it and batch it up (see stream.js)
+ * - Send it back to the main thread to render
+ */
 self.startFetch = async function( layerKey, dateIndex, intensityScale, propertyLayerConfig ) {
 	console.log("Worker: Rendering canvas " + dateIndex + " " + layerKey)
 	if(layerKey.lastIndexOf("items", 0) === 0) {
