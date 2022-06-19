@@ -4,13 +4,13 @@ A map showing density of Wikidata items, hosted on [GitHub Pages](https://wmde.g
 
 [https://wmde.github.io/wikidata-map/dist/index.html](https://wmde.github.io/wikidata-map/dist/index.html)
 
-You can find a static gallery of images and animations [on commons](https://commons.wikimedia.org/wiki/Wikidata_map)
+You can find a static gallery of images and animations [on Commons](https://commons.wikimedia.org/wiki/Wikidata_map)
 
 ![](
 https://upload.wikimedia.org/wikipedia/commons/4/4a/Wikidata-map-2014-2021-yearly-items-intensity-100.gif)
 ## Development
 
-Just start editing the js and css files directly.
+Just start editing the JS and CSS files directly.
 
 There is no build step and there are no dependencies.
 
