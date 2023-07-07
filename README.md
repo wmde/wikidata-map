@@ -8,6 +8,7 @@ You can find a static gallery of images and animations [on Commons](https://comm
 
 ![](
 https://upload.wikimedia.org/wikipedia/commons/4/4a/Wikidata-map-2014-2021-yearly-items-intensity-100.gif)
+
 ## Development
 
 Just start editing the JS and CSS files directly.
