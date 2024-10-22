@@ -7,7 +7,7 @@ The map is powered by pre calculated pixels, not coordinates.
 These tables only need to be created once...
 
 ```sql
-CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_pixels (
+CREATE TABLE IF NOT EXISTS wmde_wikidata_map.wikidata_map_item_pixels (
     `id` string,
     `posx` int,
     `posy` int
@@ -18,7 +18,7 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 
-CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_relation_pixels (
+CREATE TABLE IF NOT EXISTS wmde_wikidata_map.wikidata_map_item_relation_pixels (
     `forId` string,
     `posx1` int,
     `posy1` int,
@@ -37,7 +37,7 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 ### Setup
 
 ```sh
-spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64
+spark3-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64
 ```
 
 You can read more about the WMF spark setup [here](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Cluster/Spark).
@@ -48,11 +48,11 @@ You can read more about the WMF spark setup [here](https://wikitech.wikimedia.or
 SET hivevar:WIKIDATA_MAP_SNAPSHOT='2021-10-18';
 
 -- Modern flow tables
-SET hivevar:WIKIDATA_MAP_ITEM_COORD_TABLE=addshore.wikidata_map_item_coordinates;
-SET hivevar:WIKIDATA_MAP_ITEM_RELATION_TABLE=addshore.wikidata_map_item_relations;
+SET hivevar:WIKIDATA_MAP_ITEM_COORD_TABLE=wmde_wikidata_map.wikidata_map_item_coordinates;
+SET hivevar:WIKIDATA_MAP_ITEM_RELATION_TABLE=wmde_wikidata_map.wikidata_map_item_relations;
 -- Old backfill tables
-SET hivevar:WIKIDATA_MAP_ITEM_COORD_TABLE=addshore.wikidata_map_item_coordinates_old_backfill_text;
-SET hivevar:WIKIDATA_MAP_ITEM_RELATION_TABLE=addshore.wikidata_map_item_relations_old_backfill_text;
+SET hivevar:WIKIDATA_MAP_ITEM_COORD_TABLE=wmde_wikidata_map.wikidata_map_item_coordinates_old_backfill_text;
+SET hivevar:WIKIDATA_MAP_ITEM_RELATION_TABLE=wmde_wikidata_map.wikidata_map_item_relations_old_backfill_text;
 ```
 
 You also need to set this:
@@ -75,16 +75,16 @@ In order to get to a similar quality we will x4 the target size, to 7680 x 4320.
  - TODO the below query is for earth only...
 
 ```sql
-INSERT INTO addshore.wikidata_map_item_pixels
+INSERT INTO wmde_wikidata_map.wikidata_map_item_pixels
 PARTITION(snapshot)
 SELECT
     id, 
     cast((cast(longitude as decimal(15, 10)) + 180) / 361 * 7680 as int) as posx,
-    cast(abs((cast(latitude as decimal(15, 10)) - 90) / 181 * 4320)as int) as posy,
+    cast(abs((cast(latitude as decimal(15, 10)) - 90) / 181 * 4320) as int) as posy,
     snapshot
 FROM ${WIKIDATA_MAP_ITEM_COORD_TABLE}
 WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
-    AND globe = "http://www.wikidata.org/entity/Q2";
+AND globe = "http://www.wikidata.org/entity/Q2";
 ```
 
 ### Calculate item relation pixel locations
@@ -92,7 +92,7 @@ WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
 Then figure out how the relations relate to our pixel map:
 
 ```sql
-INSERT INTO addshore.wikidata_map_item_relation_pixels
+INSERT INTO wmde_wikidata_map.wikidata_map_item_relation_pixels
 PARTITION(snapshot)
 SELECT
     x.forId as forId,
@@ -106,8 +106,8 @@ FROM (
     FROM ${WIKIDATA_MAP_ITEM_RELATION_TABLE}
     WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
 ) x
-JOIN addshore.wikidata_map_item_pixels a ON (a.id = x.fromId) AND a.snapshot=x.snapshot
-JOIN addshore.wikidata_map_item_pixels b ON (b.id = x.toId) AND b.snapshot=x.snapshot
+JOIN wmde_wikidata_map.wikidata_map_item_pixels a ON (a.id = x.fromId) AND a.snapshot=x.snapshot
+JOIN wmde_wikidata_map.wikidata_map_item_pixels b ON (b.id = x.toId) AND b.snapshot=x.snapshot
 WHERE x.snapshot=${WIKIDATA_MAP_SNAPSHOT}
 GROUP BY
     x.forId,
@@ -119,13 +119,13 @@ GROUP BY
 LIMIT 100000000;
 ```
 
-## Check the ammount of data;
+## Check the amount of data;
 
 You should have rows for the correct snapshot in all of the tables...
 
 ```sql
-SELECT COUNT(*) FROM addshore.wikidata_map_item_pixels WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
-SELECT COUNT(*) FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
+SELECT COUNT(*) FROM wmde_wikidata_map.wikidata_map_item_pixels WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
+SELECT COUNT(*) FROM wmde_wikidata_map.wikidata_map_item_relation_pixels WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
 ```
 
 ## Cleanup?
@@ -133,8 +133,8 @@ SELECT COUNT(*) FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot=$
 If you add duplicate stuff by accident, you can clean it up!
 
 ```sql
-INSERT OVERWRITE TABLE addshore.wikidata_map_item_pixels SELECT DISTINCT * FROM addshore.wikidata_map_item_pixels;
-INSERT OVERWRITE TABLE addshore.wikidata_map_item_relation_pixels SELECT DISTINCT * FROM addshore.wikidata_map_item_relation_pixels;
+INSERT OVERWRITE TABLE wmde_wikidata_map.wikidata_map_item_pixels SELECT DISTINCT * FROM wmde_wikidata_map.wikidata_map_item_pixels;
+INSERT OVERWRITE TABLE wmde_wikidata_map.wikidata_map_item_relation_pixels SELECT DISTINCT * FROM wmde_wikidata_map.wikidata_map_item_relation_pixels;
 ```
 
 ## Generate the CSVs
@@ -150,14 +150,15 @@ PropertyArray=("P17"  "P36"  "P47"  "P138"  "P150"  "P190"  "P197"  "P403")
 
 And write the files...
 
+// TODO tail -n +6?
 - `tail -n +2` removes the firt line of output, which will be `PYSPARK_PYTHON=python3.7`
 - `sed 's/[\t]/,/g'` turns the TSV into a CSV
 
 ```sh
-spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx, posy, COUNT(*) as count FROM addshore.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
+spark3-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx, posy, COUNT(*) as count FROM wmde_wikidata_map.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
 for PROPERTY in ${PropertyArray[*]}; do
     echo $PROPERTY
-    spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM addshore.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = '${PROPERTY}' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv
+    spark3-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM wmde_wikidata_map.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = '${PROPERTY}' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv
 done
 ```
 
@@ -203,17 +204,17 @@ WIKIDATA_MAP_SNAPSHOT='2021-10-18'
 PropertyArray=("P17"  "P36"  "P47"  "P138"  "P150"  "P190"  "P197"  "P403")
 ```
 
-And move them into the published directory
+And move them into the `/srv/published` directory (making sure the dir exists first)
 
 ```sh
-cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
+mkdir -p /srv/published/datasets/one-off/wikidata/wmde_wikidata_map
+cp -v map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv /srv/published/datasets/one-off/wikidata/wmde_wikidata_map/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
 for PROPERTY in ${PropertyArray[*]}; do
-    echo $PROPERTY
-    cp map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv /srv/published/datasets/one-off/wikidata/addshore/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv 
+    cp -v map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv /srv/published/datasets/one-off/wikidata/wmde_wikidata_map/map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv 
 done
 published-sync
 ```
 
 This can take a little while to show up...
 
-Make sure the file appears: https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/
+Make sure the files appears: https://analytics.wikimedia.org/published/datasets/one-off/wikidata/wmde_wikidata_map/

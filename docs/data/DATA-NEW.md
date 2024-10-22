@@ -5,7 +5,7 @@
 These tables only need to be created once...
 
 ```sql
-CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_coordinates (
+CREATE TABLE IF NOT EXISTS wmde_wikidata_map.wikidata_map_item_coordinates (
     `id` string                            COMMENT 'The id of the entity, Q32753077 for instance',
     `globe` string,
     `longitude` string,
@@ -17,7 +17,7 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 
-CREATE TABLE IF NOT EXISTS addshore.wikidata_map_item_relations (
+CREATE TABLE IF NOT EXISTS wmde_wikidata_map.wikidata_map_item_relations (
     `fromId` string,
     `toId` string,
     `forId` string
@@ -64,7 +64,7 @@ SET hive.exec.dynamic.partition.mode=nonstrict;
 ### Extracting initial data
 
 ```sql
-INSERT INTO addshore.wikidata_map_item_coordinates
+INSERT INTO wmde_wikidata_map.wikidata_map_item_coordinates
 PARTITION(snapshot)
 SELECT
     id,
@@ -77,7 +77,7 @@ LATERAL VIEW explode(claims) t AS claim
 WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
     AND typ = 'item'
     AND claim.mainsnak.property = 'P625'
-    AND claim.mainsnak.typ = 'value'; LIMIT 10;
+    AND claim.mainsnak.typ = 'value';
 ```
 
 ### Calculate item relations
@@ -94,7 +94,7 @@ Currently this is done for:
 - [P403 (mouth of watercourse)](https://www.wikidata.org/wiki/Property:P403)
 
 ```sql
-INSERT INTO addshore.wikidata_map_item_relations
+INSERT INTO wmde_wikidata_map.wikidata_map_item_relations
 PARTITION(snapshot)
 SELECT
     id AS fromId,
@@ -114,6 +114,6 @@ WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT}
 You should have rows for the correct snapshot in all of the tables...
 
 ```sql
-SELECT COUNT(*) FROM addshore.wikidata_map_item_coordinates WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
-SELECT COUNT(*) FROM addshore.wikidata_map_item_relations WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
+SELECT COUNT(*) FROM wmde_wikidata_map.wikidata_map_item_coordinates WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
+SELECT COUNT(*) FROM wmde_wikidata_map.wikidata_map_item_relations WHERE snapshot=${WIKIDATA_MAP_SNAPSHOT};
 ```
