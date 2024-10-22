@@ -33,12 +33,12 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 
 ### Setup
 
-- Log into `stat1007.eqiad.wmnet`
+- Log into `stat1011.eqiad.wmnet`
 - Do `kinit` to auth yourself
 - Open up a spark shell
 
 ```sh
-spark2-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64
+spark3-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64
 ```
 
 You can read more about the WMF spark setup [here](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Cluster/Spark).
