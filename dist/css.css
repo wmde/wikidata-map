@@ -50,3 +50,7 @@ canvas{
   transform: scale(4);
   transform-origin: top left;
 }
+
+form label {
+    margin-right: 5px;
+}
