@@ -11,7 +11,7 @@ self.importScripts(
 self.startFetch = async function( layerKey, dateIndex, intensityScale, propertyLayerConfig ) {
 	console.log("Worker: Rendering canvas " + dateIndex + " " + layerKey)
 	if(layerKey.lastIndexOf("items", 0) === 0) {
-		let mapUrl = 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-' + dateIndex + '-7680-4320-pixels.csv'
+		let mapUrl = 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/wmde_wikidata_map/map-' + dateIndex + '-7680-4320-pixels.csv'
 		await fetch(mapUrl, { mode: "cors" })
 		.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
 		.then(dataStream => {return valuesToBatchedValuesReadableStream( dataStream.getReader(), 5000 )})
@@ -26,7 +26,7 @@ self.startFetch = async function( layerKey, dateIndex, intensityScale, propertyL
 		propertyLayerConfig.forEach( function(layer){
 			let propertyId = layer.id;
 			if(propertyId == layerKey) {
-				let layerUrl = 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/addshore/map-' + dateIndex + '-7680-4320-relation-pixels-{property}.csv'
+				let layerUrl = 'https://analytics.wikimedia.org/published/datasets/one-off/wikidata/wmde_wikidata_map/map-' + dateIndex + '-7680-4320-relation-pixels-{property}.csv'
 				layerUrl = layerUrl.replace('{property}', propertyId);
 				fetch(layerUrl, { mode: "cors" })
 					.then(response => {return chunksToLinesReadableStream( response.body.getReader() )})
