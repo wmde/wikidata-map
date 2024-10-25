@@ -1,12 +1,12 @@
 # Data
 
-Data is currently generated from a Wikidata JSON dump loaded into Hadoop on the Wikimedia Foundation Analaytics cluster. See DATA-NEW.md
+Data is currently generated from a Wikidata JSON dump loaded into Hadoop on the Wikimedia Foundation Analaytics cluster, see [DATA-NEW.md](DATA-NEW.md).
 
-Old data can also be gathered from the old wikidata-analysis project, See DATA-OLD.md
+Old data can also be gathered from the old wikidata-analysis project, see [DATA-OLD.md](DATA-OLD.md).
 
-Once data is collected, it then needs to be turned into pizel data, for that see DATA-PIXELS.md
+Once data is collected, it then needs to be turned into pixel data, for that see [DATA-PIXELS.md](DATA-PIXELS.md).
 
-The below diagram should provide some picture of both the OLD and new flows.
+The below diagram should provide some picture of both the OLD and NEW flows.
 
 ```
                                       +----------------+
@@ -23,8 +23,8 @@ The below diagram should provide some picture of both the OLD and new flows.
                                       |   JSON  dump   |
                                       |                |
                                   +---+----------------+---+
-                        copied to |                        | load
-                                  |                        |
+                        old data  |                        | new data
+                        copied to |                        | loaded into
                                   v                        v
                           +---------------+      +--------------------+
                           |               |      |                    |
@@ -53,7 +53,7 @@ The below diagram should provide some picture of both the OLD and new flows.
 |                                  |        |             |          |                                    |
 +----------------------------------+        +-------------+          +-----------------+------------------+
                                                                                        |
-                                              +----------------------------------<-----+
+                                              +----------------------------------------+
                                               |              process
                                               v
                          +-------------------------------------------+
@@ -73,4 +73,4 @@ The below diagram should provide some picture of both the OLD and new flows.
                                      +----------------+
 ```
 
--- Generated on https://asciiflow.com/#/
+-- Generated on https://asciiflow.com/
