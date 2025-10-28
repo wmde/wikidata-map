@@ -37,7 +37,7 @@ OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat';
 ### Setup
 
 ```sh
-spark3-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64
+spark3-sql --master yarn --executor-memory 16G --executor-cores 4 --driver-memory 4G --conf spark.dynamicAllocation.maxExecutors=64
 ```
 
 You can read more about the WMF spark setup [here](https://wikitech.wikimedia.org/wiki/Analytics/Systems/Cluster/Spark).
