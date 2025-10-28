@@ -273,15 +273,25 @@ canvas{
 /* Toggle Label */
 #configToggleLabel {
     background: transparent;
-    opacity: 0;
     position: fixed;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
     z-index: 20;
     font-size: 1.5rem;
     cursor: pointer;
     transition: opacity 0.3s ease;
     padding: 0.5rem;
+    font-weight: bold;
+    color: #3b82f6;
+}
+
+#configToggleLabel::before {
+    content: ">";
+}
+
+#configToggle:checked + #configToggleLabel::before {
+    content: "<";
 }
 
 #configToggle {
@@ -289,7 +299,7 @@ canvas{
     opacity: 0;
 }
 
-#configToggleLabel:hover, #configToggle:focus + #configToggleLabel {
+#configToggleLabel:hover {
     opacity: 1;
 }
 
