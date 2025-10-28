@@ -151,10 +151,10 @@ And write the files...
 - `sed 's/[\t]/,/g'` turns the TSV into a CSV
 
 ```sh
-spark3-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx, posy, COUNT(*) as count FROM wmde_wikidata_map.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
+spark3-sql --master yarn --executor-memory 16G --executor-cores 4 --driver-memory 4G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx, posy, COUNT(*) as count FROM wmde_wikidata_map.wikidata_map_item_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' GROUP BY posx, posy ORDER BY count DESC LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-pixels.csv
 for PROPERTY in ${PropertyArray[*]}; do
     echo $PROPERTY
-    spark3-sql --master yarn --executor-memory 8G --executor-cores 4 --driver-memory 2G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM wmde_wikidata_map.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = '${PROPERTY}' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv
+    spark3-sql --master yarn --executor-memory 16G --executor-cores 4 --driver-memory 4G --conf spark.dynamicAllocation.maxExecutors=64 -e "SELECT posx1, posy1, posx2, posy2 FROM wmde_wikidata_map.wikidata_map_item_relation_pixels WHERE snapshot = '${WIKIDATA_MAP_SNAPSHOT}' AND forId = '${PROPERTY}' LIMIT 100000000" | tail -n +2 | sed 's/[\t]/,/g'  > map-${WIKIDATA_MAP_SNAPSHOT}-7680-4320-relation-pixels-${PROPERTY}.csv
 done
 ```
 
