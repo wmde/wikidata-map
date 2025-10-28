@@ -22,7 +22,7 @@ for (let i = 0; i < workerCount; i++) {
 Object.keys(workers).forEach(function(workerKey) {
 	workers[workerKey].onmessage = function(e) {
 		let batchData = e.data;
-		let canvasForBatch = canvases[batchData.drawData.dateIndex][batchData.drawData.layerKey]
+		let canvasForBatch = canvases[batchData.drawData.dateStr][batchData.drawData.layerKey]
 		window.requestAnimationFrame( function() {
 			batchData.batchedValues.forEach( function(drawValue){
 				if(batchData.drawData.drawType === 'dot') {
@@ -62,8 +62,9 @@ const canvases = {};
 
 function updateCanvas() {
 	console.log("updateCanvas called");
-	const dateIndex = dateForm.querySelector('input[name="date"]:checked').value;
-	const intensityScale = parseInt(intensityForm.querySelector('input[name="scale"]:checked').value);
+	const dateIndex = parseInt(dateSlider.value);
+	const dateStr = dates[dateIndex];
+	const intensityScale = parseInt(intensitySlider.value);
 	let itemCanvasKey = 'items.' + intensityScale
 	let propertyLayerConfig = config.layers
 
@@ -81,24 +82,24 @@ function updateCanvas() {
 	};
 
 	// Create any missing canvases that we need
-	if (!canvases[dateIndex]) {
-		canvases[dateIndex] = {};
+	if (!canvases[dateStr]) {
+		canvases[dateStr] = {};
 		propertyLayerConfig.forEach( function(layerData){
 			let propertyId = layerData.id
-			canvases[dateIndex][propertyId] = newCanvas('clear');
+			canvases[dateStr][propertyId] = newCanvas('clear');
 		})
 	}
-	if (!canvases[dateIndex][itemCanvasKey]) {
-		canvases[dateIndex][itemCanvasKey] = newCanvas('black')
+	if (!canvases[dateStr][itemCanvasKey]) {
+		canvases[dateStr][itemCanvasKey] = newCanvas('black')
 	}
 
 	// Hide them ALL, and attach them to the DOM if not already there
-	Object.keys(canvases).forEach(function(dateIndex) {
-		Object.keys(canvases[dateIndex]).forEach(function(canvasKey) {
-			canvases[dateIndex][canvasKey].style.display = 'none';
-			if(canvases[dateIndex][canvasKey].id != "canvas_" + dateIndex + "_" + canvasKey ) {
-				canvases[dateIndex][canvasKey].id = "canvas_" + dateIndex + "_" + canvasKey
-				document.querySelector('#canvas-container').appendChild(canvases[dateIndex][canvasKey]);
+	Object.keys(canvases).forEach(function(dateStr) {
+		Object.keys(canvases[dateStr]).forEach(function(canvasKey) {
+			canvases[dateStr][canvasKey].style.display = 'none';
+			if(canvases[dateStr][canvasKey].id != "canvas_" + dateStr + "_" + canvasKey ) {
+				canvases[dateStr][canvasKey].id = "canvas_" + dateStr + "_" + canvasKey
+				document.querySelector('#canvas-container').appendChild(canvases[dateStr][canvasKey]);
 			}
 		});
 	});
@@ -106,12 +107,12 @@ function updateCanvas() {
 	// Show (and render if needed) the requested canvases
 	Object.keys(layerStates).forEach(function(layerKey) {
 		if(layerStates[layerKey] === true) {
-			let canvas = canvases[dateIndex][layerKey]
+			let canvas = canvases[dateStr][layerKey]
 			canvas.style.display = 'block';
 			if(canvas.getAttribute('data-render-scheduled') !== 'true') {
 				canvas.setAttribute('data-render-scheduled', 'true')
-				console.log("Requesting render: " + dateIndex + " layer " + layerKey);
-				postToWorker([layerKey, dateIndex, intensityScale, propertyLayerConfig])
+				console.log("Requesting render: " + dateStr + " layer " + layerKey);
+				postToWorker([layerKey, dateStr, intensityScale, propertyLayerConfig])
 			}
 		}
 	});
@@ -136,14 +137,38 @@ function newCanvas(fillStyle){
 	return canvas
 }
 
-const dateForm = document.getElementById('dateSelector');
-dateForm.addEventListener('change', updateCanvas);
+// Date mapping for slider
+const dates = [
+	'2014-11-03',
+	'2015-10-05',
+	'2016-10-03',
+	'2017-10-02',
+	'2018-10-08',
+	'2019-10-07',
+	'2020-11-02',
+	'2021-10-18',
+	'2023-06-26',
+	'2024-10-07',
+	'2025-10-13'
+];
+
+const dateSlider = document.getElementById('dateSlider');
+const dateValue = document.getElementById('dateValue');
+dateSlider.addEventListener('input', function() {
+	const index = parseInt(this.value);
+	dateValue.textContent = dates[index];
+	updateCanvas();
+});
 
 const layerForm = document.getElementById('layerSelector');
 layerForm.addEventListener('change', updateCanvas);
 
-const intensityForm = document.getElementById('intensitySelector');
-intensityForm.addEventListener('change', updateCanvas);
+const intensitySlider = document.getElementById('intensitySlider');
+const intensityValue = document.getElementById('intensityValue');
+intensitySlider.addEventListener('input', function() {
+	intensityValue.textContent = this.value;
+	updateCanvas();
+});
 
 const megaCanvas = document.querySelector('#canvas-container')
 megaCanvas.addEventListener('click', zoomCanvas);
