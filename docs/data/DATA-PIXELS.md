@@ -47,12 +47,8 @@ You can read more about the WMF spark setup [here](https://wikitech.wikimedia.or
 ```sql
 SET hivevar:WIKIDATA_MAP_SNAPSHOT='2021-10-18';
 
--- Modern flow tables
 SET hivevar:WIKIDATA_MAP_ITEM_COORD_TABLE=wmde_wikidata_map.wikidata_map_item_coordinates;
 SET hivevar:WIKIDATA_MAP_ITEM_RELATION_TABLE=wmde_wikidata_map.wikidata_map_item_relations;
--- Old backfill tables
-SET hivevar:WIKIDATA_MAP_ITEM_COORD_TABLE=wmde_wikidata_map.wikidata_map_item_coordinates_old_backfill_text;
-SET hivevar:WIKIDATA_MAP_ITEM_RELATION_TABLE=wmde_wikidata_map.wikidata_map_item_relations_old_backfill_text;
 ```
 
 You also need to set this:
