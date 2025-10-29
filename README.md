@@ -15,6 +15,9 @@ Just start editing the JS and CSS files directly.
 
 There is no build step and there are no dependencies.
 
+Running locally requires serving from a web server. 
+For example, running `python -m http.server` and navigating to http://localhost:8000/dist/index.html.
+
 ## Data
 
 Data for the map is provided from the Wikidata Dump.
